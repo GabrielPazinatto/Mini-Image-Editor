@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     QPushButton* button_save_new_image = new QPushButton("Save As");
     QPushButton* button_load_image = new QPushButton("Open File");
     QPushButton* button_reset_new_image = new QPushButton("Reset");
+    QPushButton* button_negative = new QPushButton("Negative");
 
     QLabel* source_image_label = new QLabel();
     QLabel* new_image_label = new QLabel();
@@ -88,6 +89,12 @@ int main(int argc, char* argv[])
     /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
+
+    QObject::connect(button_negative, &QPushButton::clicked, [&](){
+        editor.setNegative();
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
 
     QObject::connect(button_load_image, &QPushButton::clicked, [&](){
         QString source_file_path = QFileDialog::getOpenFileName(&main_window, 
@@ -171,7 +178,8 @@ int main(int argc, char* argv[])
     push_button_layout->addWidget(button_vertical_mirror, 0, 0);
     push_button_layout->addWidget(button_horizontal_mirror, 0, 1);
     push_button_layout->addWidget(button_grayscale, 0, 2);
-    
+    push_button_layout->addWidget(button_negative, 1, 1);
+
     special_button_layout->addWidget(spinbox_quantization, 0, 0);
     special_button_layout->addWidget(spinbox_quantization_label, 0, 1);
     special_button_layout->addWidget(slider_brightness, 1, 0);
@@ -218,9 +226,12 @@ int main(int argc, char* argv[])
     -------------------------------------*/
     
     main_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);    
+    
     button_grayscale->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_vertical_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_horizontal_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    button_negative->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+
     button_save_new_image->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     button_reset_new_image->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     button_load_image->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);

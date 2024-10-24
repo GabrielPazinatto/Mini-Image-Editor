@@ -8,6 +8,21 @@ const int RED_VAL_INDEX = 2;
 const int GREEN_CHANNEL_INDEX = 1;
 const int BLUE_VAL_INDEX = 0;
 
+void ImageEditing::convertToNegative(cv::Mat* image){
+    int cols = image->cols;
+    int rows = image->rows;
+    int channels = image->channels();
+
+    #pragma omp parallel for collapse(3)
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            for(int c = 0; c < channels; c++){
+                image->at<cv::Vec3b>(i, j)[c] = 255 - image->at<cv::Vec3b>(i, j)[c]; 
+            }
+        }
+    }
+}
+
 void ImageEditing::changeQuantization(cv::Mat* image, uint quant){
     int cols = image->cols;
     int rows = image->rows;

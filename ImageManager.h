@@ -17,6 +17,7 @@ typedef struct Modifiers{
     bool is_vertically_flipped = false;
     bool is_horizontally_flipped = false;
     bool quantization_was_modified = false;
+    bool is_negative = false;
 }Modifiers;
 
 
@@ -43,6 +44,7 @@ public:
     void changeHorizontalFlip();
     void changeVerticalFlip();
     void setGrayScale();
+    void setNegative();
 
     void applyChanges();
 

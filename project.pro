@@ -27,5 +27,9 @@ unix:!macx {
     LIBS += -lpthread
 }
 
+# **Adicionar as flags para OpenMP**
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+
 # Qt Módulos necessários
 QT += core gui widgets

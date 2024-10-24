@@ -31,6 +31,10 @@ void ImageManager::reset(){
     this->current_modifiers = this->previous_modifiers;
 }
 
+void ImageManager::setNegative(){
+    this->current_modifiers.is_negative = !this->current_modifiers.is_negative;
+}
+
 // saves the source image with a new name
 void ImageManager::renameSourceImage(std::string new_name){
     cv::imwrite(new_name, this->source_image);
@@ -102,7 +106,11 @@ void ImageManager::applyChanges(){
 
     if(current_modifiers.brightness_mod != 0){
         ImageEditing::changeBrightness(&(this->new_image), current_modifiers.brightness_mod);
-    }    
+    } 
+
+    if(current_modifiers.is_negative){
+        ImageEditing::convertToNegative(&(this->new_image));
+    }   
 
     if(current_modifiers.is_gray_scale){
         ImageEditing::convertToGrayScale(&(this->new_image));
