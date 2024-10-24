@@ -15,10 +15,12 @@ LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lope
 SOURCES += main.cpp
 SOURCES += ImageManager.cpp
 SOURCES += ImageEditing.cpp
+SOURCES += ConvKernels.cpp
 
 # Arquivos de cabeçalho
 HEADERS += ImageManager.h
 HEADERS += ImageEditing.h
+HEADERS += ConvKernels.h
 
 # Definir o sistema operacional, se necessário
 unix:!macx {

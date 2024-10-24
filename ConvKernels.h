@@ -1,6 +1,5 @@
 #define DIM 3
 
-
 class ConvolutionKernels{
 
 public:

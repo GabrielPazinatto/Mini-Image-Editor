@@ -59,7 +59,6 @@ int main(int argc, char* argv[])
     QPushButton* button_load_image = new QPushButton("Open File");
     QPushButton* button_reset_new_image = new QPushButton("Reset");
 
-
     QLabel* source_image_label = new QLabel();
     QLabel* new_image_label = new QLabel();
     QLabel* slider_brightness_label = new QLabel();

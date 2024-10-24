@@ -2,3 +2,5 @@
 *.stash
 *conflicted*
 main
+*.pdf
+*.docx
