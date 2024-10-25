@@ -5,7 +5,7 @@ const double GREEN_COEFFICIENT = 0.587;
 const double BLUE_COEFFICIENT = 0.114;
 
 const int RED_CHANNEL_INDEX = 2;
-const int GREEN_CHANNEL_INDEX = 1;
+const int GREEN_CHANNEL = 1;
 const int BLUE_CHANNEL_INDEX = 0;
 
 ImageManager::ImageManager(std::string source_image_path = ""){
@@ -45,6 +45,9 @@ void ImageManager::saveImage(std::string new_name){
     cv::imwrite(new_name, this->new_image);
 }
 
+void ImageManager::setConvolutionKernel(Kernels kernel){
+    this->current_modifiers.kernel = kernel;
+}
 // stores the value for the quantization value
 void ImageManager::setQuantization(uint quant){
     this->current_modifiers.quantization_was_modified = true;
@@ -118,6 +121,10 @@ void ImageManager::applyChanges(){
 
     if(current_modifiers.is_horizontally_flipped){
         ImageEditing::mirrorHorizontal(&(this->new_image));
+    }
+
+    if(current_modifiers.kernel != NONE){
+        ImageEditing::applyConvolution(&(this->new_image), ConvolutionKernels::kernel_map.at(current_modifiers.kernel));
     }
 
     if(current_modifiers.is_vertically_flipped){

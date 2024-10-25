@@ -16,9 +16,9 @@
 #include <QSlider>
 #include <QIcon>
 #include <QSpinBox>
+#include <QTableView>
 
 #include "ImageManager.h"
-#include "ImageEditing.h"
 
 /*-------------------------------------
               CSS STYLES
@@ -40,7 +40,20 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
 
     QWidget main_window;
- 
+    QWidget convolutions_window; 
+
+    /*-------------------------------------
+            CONV WINDOW LAYOUTS
+    -------------------------------------*/
+
+    QHBoxLayout* main_conv_layout = new QHBoxLayout();
+    QVBoxLayout* kernel_select_layout = new QVBoxLayout();
+    QGridLayout* predefined_kernel_layout = new QGridLayout();
+
+    /*-------------------------------------
+            MAIN WINDOW LAYOUTS
+    -------------------------------------*/
+
     QHBoxLayout* main_layout = new QHBoxLayout();
     QHBoxLayout* image_layout = new QHBoxLayout();
     QVBoxLayout* editor_layout = new QVBoxLayout();
@@ -49,9 +62,12 @@ int main(int argc, char* argv[])
     QGridLayout* special_button_layout = new QGridLayout();
     QGridLayout* misc_button_layout = new QGridLayout();
 
+    /*-------------------------------------
+              MAIN WINDOW BUTTONS
+    -------------------------------------*/
+
     QSlider* slider_brightness = new QSlider(Qt::Horizontal);
     QSpinBox* spinbox_quantization = new QSpinBox;
-
     QPushButton* button_vertical_mirror = new QPushButton("Vertical Mirror");
     QPushButton* button_horizontal_mirror = new QPushButton("Horizontal Mirror");
     QPushButton* button_grayscale = new QPushButton("Grayscale");
@@ -59,15 +75,41 @@ int main(int argc, char* argv[])
     QPushButton* button_load_image = new QPushButton("Open File");
     QPushButton* button_reset_new_image = new QPushButton("Reset");
     QPushButton* button_negative = new QPushButton("Negative");
+    QPushButton* button_convolution_menu = new QPushButton("Convolutions");
+
+    /*-------------------------------------
+              CONV WINDOW BUTTONS
+    -------------------------------------*/
+
+    QPushButton* conv_gaussian_button = new QPushButton("Gaussian");
+    QPushButton* conv_laplacian_n_button = new QPushButton("Laplacian N");
+    QPushButton* conv_laplacian_p_button = new QPushButton("Laplacian P");
+    QPushButton* conv_high_boost_button = new QPushButton("High Boost");
+    QPushButton* conv_prewitt_h_button = new QPushButton("Prewitt H");
+    QPushButton* conv_prewitt_v_button = new QPushButton("Prewitt V");
+    QPushButton* conv_sobel_h_button = new QPushButton("Sobel H");
+    QPushButton* conv_sobel_v_button = new QPushButton("Sobel V");
+
+    QTableView* editable_kernel_table = new QTableView();
+
+    /*-------------------------------------
+              MAIN WINDOW LABELS
+    -------------------------------------*/
 
     QLabel* source_image_label = new QLabel();
     QLabel* new_image_label = new QLabel();
     QLabel* slider_brightness_label = new QLabel();
     QLabel* spinbox_quantization_label = new QLabel();
 
-    slider_brightness_label->setAlignment(Qt::AlignLeft);
-    slider_brightness->setMinimumSize(QSize(300, 10));
-    slider_brightness->setMaximumSize(QSize(900, 15));
+    /*-------------------------------------
+              CONV WINDOW LABELS
+    -------------------------------------*/
+
+    QLabel* convolution_image_label = new QLabel();  
+
+    /*-------------------------------------
+                  QICONS
+    -------------------------------------*/
 
     QIcon* icon_mirror_vertical = new QIcon("icons/mirror-vertical.svg");
     QIcon* icon_mirror_horizontal = new QIcon("icons/mirror-horizontal.svg");
@@ -76,6 +118,11 @@ int main(int argc, char* argv[])
     /*-------------------------------------
               INITIALIZE BUTTONS
     -------------------------------------*/
+
+    slider_brightness_label->setAlignment(Qt::AlignLeft);
+
+    slider_brightness->setMinimumSize(QSize(300, 10));
+    slider_brightness->setMaximumSize(QSize(900, 15));
 
     slider_brightness->setMaximum(255);
     slider_brightness->setMinimum(-255);
@@ -87,8 +134,66 @@ int main(int argc, char* argv[])
     spinbox_quantization->setValue(255);
 
     /*-------------------------------------
+             CONV BUTTONS LAMBDAS
+    -------------------------------------*/
+
+    QObject::connect(conv_gaussian_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(GAUSSIAN_LOW_PASS);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_laplacian_n_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(LAPLACIAN_HIGH_PASS_NEGATIVE);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_laplacian_p_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(LAPLACIAN_HIGH_PASS_POSITIVE);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_high_boost_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(HIGH_BOOST);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_prewitt_h_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(PREWITT_HORIZONTAL);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_prewitt_v_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(PREWITT_VERTICAL);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_sobel_h_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(SOBEL_HORIZONTAL);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_sobel_v_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(SOBEL_VERTICAL);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
+
+    QObject::connect(button_convolution_menu, &QPushButton::clicked, [&](){
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        convolutions_window.adjustSize();
+        convolutions_window.show();
+    });
 
     QObject::connect(button_negative, &QPushButton::clicked, [&](){
         editor.setNegative();
@@ -106,7 +211,6 @@ int main(int argc, char* argv[])
         main_window.adjustSize();
         main_window.show();
     });
-
 
     QObject::connect(spinbox_quantization, QOverload<int>::of(&QSpinBox::valueChanged), [&](){
         editor.setQuantization(spinbox_quantization->value());
@@ -171,6 +275,20 @@ int main(int argc, char* argv[])
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
+
+    /*-------------------------------------
+           ADD WIDGETS TO LAYOUTS (CONV)
+    -------------------------------------*/
+
+    predefined_kernel_layout->addWidget(conv_gaussian_button, 0, 0);
+    predefined_kernel_layout->addWidget(conv_high_boost_button, 0, 1);
+    predefined_kernel_layout->addWidget(conv_laplacian_n_button, 1, 0);
+    predefined_kernel_layout->addWidget(conv_laplacian_p_button, 1, 1);
+    predefined_kernel_layout->addWidget(conv_prewitt_h_button, 2, 0);
+    predefined_kernel_layout->addWidget(conv_prewitt_v_button, 2, 1);
+    predefined_kernel_layout->addWidget(conv_sobel_h_button, 3, 0);
+    predefined_kernel_layout->addWidget(conv_sobel_v_button, 3, 1);
+    
     /*-------------------------------------
              ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
@@ -184,6 +302,7 @@ int main(int argc, char* argv[])
     special_button_layout->addWidget(spinbox_quantization_label, 0, 1);
     special_button_layout->addWidget(slider_brightness, 1, 0);
     special_button_layout->addWidget(slider_brightness_label, 1, 1);
+    special_button_layout->addWidget(button_convolution_menu, 2, 0);
     
     misc_button_layout->addWidget(button_save_new_image, 0, 0);
     misc_button_layout->addWidget(button_load_image, 0, 1);
@@ -193,13 +312,21 @@ int main(int argc, char* argv[])
     image_layout->addWidget(new_image_label);
 
     /*-------------------------------------
-             ADD LAYOUTS TO WINDOW 
+            ADD LAYOUTS TO CONV WINDOW 
+    -------------------------------------*/
+    
+    main_conv_layout->addWidget(convolution_image_label);
+    main_conv_layout->addLayout(kernel_select_layout);
+    kernel_select_layout->addLayout(predefined_kernel_layout);
+    kernel_select_layout->addWidget(editable_kernel_table);
+
+    /*-------------------------------------
+            ADD LAYOUTS TO MAIN WINDOW 
     -------------------------------------*/
 
     editor_layout->addLayout(push_button_layout);
     editor_layout->addLayout(special_button_layout);
     editor_layout->addLayout(misc_button_layout);
-
 
     main_layout->addLayout(image_layout);
     main_layout->addLayout(editor_layout);
@@ -227,6 +354,8 @@ int main(int argc, char* argv[])
     
     main_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);    
     
+    button_convolution_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+
     button_grayscale->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_vertical_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_horizontal_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
@@ -240,9 +369,33 @@ int main(int argc, char* argv[])
 
     source_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
     new_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
-    
+
     /*-------------------------------------
-              INITIALIZE WINDOW
+            CONV WINDOW STYLESHEETS
+    -------------------------------------*/
+
+    convolutions_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);
+
+    conv_gaussian_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_laplacian_n_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_laplacian_p_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_high_boost_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_prewitt_h_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_prewitt_v_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_sobel_h_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_sobel_v_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+
+    convolution_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
+
+    /*-------------------------------------
+            INITIALIZE CONV WINDOW
+    -------------------------------------*/
+
+    convolutions_window.setLayout(main_conv_layout);
+    convolutions_window.setWindowTitle("Convolutions");
+
+    /*-------------------------------------
+            INITIALIZE MAIN WINDOW
     -------------------------------------*/
 
     main_window.setWindowTitle("Photoshop");
@@ -251,5 +404,4 @@ int main(int argc, char* argv[])
     main_window.show();
 
     return app.exec();
-
 }

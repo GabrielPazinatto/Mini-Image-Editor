@@ -13,11 +13,14 @@ typedef struct Modifiers{
     short int brightness_mod = 0;
     short int quantization = -1;
     
+    Kernels kernel = NONE;
+
     bool is_gray_scale;
     bool is_vertically_flipped = false;
     bool is_horizontally_flipped = false;
     bool quantization_was_modified = false;
     bool is_negative = false;
+
 }Modifiers;
 
 
@@ -45,8 +48,10 @@ public:
     void changeVerticalFlip();
     void setGrayScale();
     void setNegative();
+    void setConvolutionKernel(Kernels kernel);
 
     void applyChanges();
+
 
     void loadImage(std::string image_file_path);
     void reset();
