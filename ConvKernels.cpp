@@ -20,7 +20,7 @@ const double ConvolutionKernels::LAPLACIAN_HIGH_PASS_POSITIVE[DIM][DIM] = {
 
 const double ConvolutionKernels::HIGH_BOOST[DIM][DIM] = {
     {-1, -1, -1},
-    {-1, 9, -1},
+    {-1, 8, -1},
     {-1, -1, -1}
 };
 
@@ -34,4 +34,16 @@ const double ConvolutionKernels::PREWITT_VERTICAL[DIM][DIM] = {
     {-1, -1, -1},
     {0, 0, 0},
     {1, 1, 1}
+};
+
+const double ConvolutionKernels::SOBEL_HORIZONTAL[DIM][DIM] = {
+    {-1, 0, 1},
+    {-2, 0, 2},
+    {-1, 0, 1}
+};
+
+const double ConvolutionKernels::SOBEL_VERTICAL[DIM][DIM] = {
+    {-1, -2, -1},
+    {0, 0, 0},
+    {1, 2, 1}
 };
