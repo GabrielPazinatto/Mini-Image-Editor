@@ -6,7 +6,7 @@
 
 #define DIM 3
 
-const enum Kernels{
+enum Kernels{
     GAUSSIAN_LOW_PASS,
     LAPLACIAN_HIGH_PASS_NEGATIVE,
     LAPLACIAN_HIGH_PASS_POSITIVE,
@@ -17,9 +17,6 @@ const enum Kernels{
     SOBEL_VERTICAL,
     NONE
 };
-
-
-
 
 class ConvolutionKernels{
 
