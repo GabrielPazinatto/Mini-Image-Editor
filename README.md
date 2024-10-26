@@ -2,7 +2,7 @@
 
 ## How to Build
 
-For Linux Fedora 40 
+For Linux Fedora 40
 
 Install the dependencies:
 

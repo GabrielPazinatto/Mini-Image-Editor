@@ -16,7 +16,8 @@
 #include <QSlider>
 #include <QIcon>
 #include <QSpinBox>
-#include <QTableView>
+#include <QTableWidget>
+#include <QHeaderView>
 
 #include "ImageManager.h"
 
@@ -28,6 +29,8 @@ const QString MAIN_WINDOW_CSS_STYLE = QString::fromUtf8("background-color: #3b3b
 const QString IMAGE_LABEL_CSS_SYLE = QString::fromUtf8("background-color: #222222; border:5px solid #141414; border-style:ridge");
 const QString ACTION_BUTTON_CSS_STYLE = QString::fromUtf8("background-color: #636363; border:2px solid #141414; border-style:ridge; padding:10px;");
 const QString SPECIAL_ACTION_BUTTON_CSS_STYLE = QString::fromUtf8("background-color: #969696; border:2px solid #141414; border-style:ridge; padding:10px;");
+const QString TABLE_CSS_STYLE = QString::fromUtf8("QTableWidget { border: 2px solid black; }"
+                                                  "QTableWidget::item { border: 1px solid black; background-color: #969696}");
 
 /*-------------------------------------
                 MAIN
@@ -89,8 +92,10 @@ int main(int argc, char* argv[])
     QPushButton* conv_prewitt_v_button = new QPushButton("Prewitt V");
     QPushButton* conv_sobel_h_button = new QPushButton("Sobel H");
     QPushButton* conv_sobel_v_button = new QPushButton("Sobel V");
+    QPushButton* conv_clear_button = new QPushButton("Clear");
+    QPushButton* conv_apply_button = new QPushButton("Apply");
 
-    QTableView* editable_kernel_table = new QTableView();
+    QTableWidget* editable_kernel_table = new QTableWidget(DIM, DIM);
 
     /*-------------------------------------
               MAIN WINDOW LABELS
@@ -105,6 +110,7 @@ int main(int argc, char* argv[])
               CONV WINDOW LABELS
     -------------------------------------*/
 
+    QLabel* editable_kernel_label = new QLabel();
     QLabel* convolution_image_label = new QLabel();  
 
     /*-------------------------------------
@@ -136,6 +142,17 @@ int main(int argc, char* argv[])
     /*-------------------------------------
              CONV BUTTONS LAMBDAS
     -------------------------------------*/
+
+    QObject::connect(conv_clear_button, &QPushButton::clicked, [&](){
+        editor.setConvolutionKernel(NONE);
+        editor.applyChanges();
+        convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(conv_apply_button, &QPushButton::clicked, [&](){
+        convolutions_window.close();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
 
     QObject::connect(conv_gaussian_button, &QPushButton::clicked, [&](){
         editor.setConvolutionKernel(GAUSSIAN_LOW_PASS);
@@ -185,14 +202,16 @@ int main(int argc, char* argv[])
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
+    
+
     /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
 
     QObject::connect(button_convolution_menu, &QPushButton::clicked, [&](){
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
-        convolutions_window.adjustSize();
         convolutions_window.show();
+        convolutions_window.adjustSize();
     });
 
     QObject::connect(button_negative, &QPushButton::clicked, [&](){
@@ -275,6 +294,24 @@ int main(int argc, char* argv[])
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
+    /*-------------------------------------
+        INITIALIZE CONV EDITABLE KERNEL
+    -------------------------------------*/ 
+
+    editable_kernel_table->setStyleSheet(TABLE_CSS_STYLE);
+    editable_kernel_table->horizontalHeader()->hide();
+    editable_kernel_table->verticalHeader()->hide();
+    editable_kernel_table->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    editable_kernel_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    editable_kernel_table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    for(int i = 0; i < DIM; i++){
+        for(int j = 0; j < DIM; j++){
+            QTableWidgetItem* cell = new QTableWidgetItem("0");
+            cell->setTextAlignment(Qt::AlignCenter); 
+            editable_kernel_table->setItem(i, j, cell);
+        }
+    }
 
     /*-------------------------------------
            ADD WIDGETS TO LAYOUTS (CONV)
@@ -288,7 +325,9 @@ int main(int argc, char* argv[])
     predefined_kernel_layout->addWidget(conv_prewitt_v_button, 2, 1);
     predefined_kernel_layout->addWidget(conv_sobel_h_button, 3, 0);
     predefined_kernel_layout->addWidget(conv_sobel_v_button, 3, 1);
-    
+    predefined_kernel_layout->addWidget(conv_apply_button, 4, 0);
+    predefined_kernel_layout->addWidget(conv_clear_button, 4, 1);
+
     /*-------------------------------------
              ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
@@ -318,6 +357,7 @@ int main(int argc, char* argv[])
     main_conv_layout->addWidget(convolution_image_label);
     main_conv_layout->addLayout(kernel_select_layout);
     kernel_select_layout->addLayout(predefined_kernel_layout);
+    kernel_select_layout->addWidget(editable_kernel_label);
     kernel_select_layout->addWidget(editable_kernel_table);
 
     /*-------------------------------------
@@ -340,6 +380,9 @@ int main(int argc, char* argv[])
     slider_brightness_label->setText("Brightness: +0");
     spinbox_quantization_label->setText("Quantization");
         
+    editable_kernel_label->setText("Custom Kernel");
+    editable_kernel_label->setAlignment(Qt::AlignCenter);
+
     /*-------------------------------------
                     ICONS
     -------------------------------------*/
@@ -384,6 +427,10 @@ int main(int argc, char* argv[])
     conv_prewitt_v_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     conv_sobel_h_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     conv_sobel_v_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    conv_apply_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    conv_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+
+    //editable_kernel_table->setStyleSheet(TABLE_CSS_STYLE);
 
     convolution_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
 

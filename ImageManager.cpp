@@ -123,7 +123,7 @@ void ImageManager::applyChanges(){
         ImageEditing::mirrorHorizontal(&(this->new_image));
     }
 
-    if(current_modifiers.kernel != NONE){
+    if(current_modifiers.kernel != Kernels::NONE){
         ImageEditing::applyConvolution(&(this->new_image), ConvolutionKernels::kernel_map.at(current_modifiers.kernel));
     }
 
