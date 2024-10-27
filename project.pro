@@ -33,3 +33,4 @@ QMAKE_LFLAGS += -fopenmp
 
 # Qt Módulos necessários
 QT += core gui widgets
+QT += charts
