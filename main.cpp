@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
               MAIN WINDOW BUTTONS
     -------------------------------------*/
 
-    QSlider* slider_brightness = new QSlider(Qt::Horizontal);
+    QSpinBox* spinbox_brightness = new QSpinBox;
     QSpinBox* spinbox_quantization = new QSpinBox;
     QPushButton* button_vertical_mirror = new QPushButton("Vertical Mirror");
     QPushButton* button_horizontal_mirror = new QPushButton("Horizontal Mirror");
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
     QLabel* source_image_label = new QLabel();
     QLabel* new_image_label = new QLabel();
-    QLabel* slider_brightness_label = new QLabel();
+    QLabel* spinbox_brightness_label = new QLabel();
     QLabel* spinbox_quantization_label = new QLabel();
 
     /*-------------------------------------
@@ -128,15 +128,16 @@ int main(int argc, char* argv[])
               INITIALIZE BUTTONS
     -------------------------------------*/
 
-    slider_brightness_label->setAlignment(Qt::AlignLeft);
+    spinbox_brightness_label->setAlignment(Qt::AlignLeft);
+    spinbox_brightness->setMinimumSize(QSize(300, 30));
+    spinbox_brightness->setMaximumSize(QSize(900, 30));
+    spinbox_brightness->setMaximum(255);
+    spinbox_brightness->setMinimum(-255);
+    spinbox_brightness->setValue(0);
 
-    slider_brightness->setMinimumSize(QSize(300, 10));
-    slider_brightness->setMaximumSize(QSize(900, 15));
-
-    slider_brightness->setMaximum(255);
-    slider_brightness->setMinimum(-255);
-    slider_brightness->setValue(0);
-
+    spinbox_quantization_label->setAlignment(Qt::AlignLeft);
+    spinbox_quantization->setMinimumSize(QSize(300, 30));
+    spinbox_quantization->setMaximumSize(QSize(900, 30));
     spinbox_quantization->setEnabled(false);
     spinbox_quantization->setMaximum(255);
     spinbox_quantization->setMinimum(1);
@@ -267,21 +268,17 @@ int main(int argc, char* argv[])
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
-    QObject::connect(slider_brightness, &QSlider::valueChanged, [&](){
-        int slider_value = slider_brightness->value();
-        std::string label_text = "Brightness: ";
+    QObject::connect(spinbox_brightness, QOverload<int>::of(&QSpinBox::valueChanged), [&](){
+        int spinbox_value = spinbox_brightness->value();
+        std::string label_text = "Brightness";
 
-        if(slider_value >= 0) label_text += "+";
-        label_text += std::to_string(slider_value);
-        slider_brightness_label->setText(QString(label_text.c_str()));
-        
-        editor.setBrightnessModifier(slider_value);
+        editor.setBrightnessModifier(spinbox_value);
         editor.applyChanges();
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));        
     });
 
     QObject::connect(button_reset_new_image, &QPushButton::clicked, [&](){
-        slider_brightness->setValue(0);
+        spinbox_brightness->setValue(0);
         spinbox_quantization->setValue(255);
         spinbox_quantization->setEnabled(editor.sourceImageIsGrayScale());
         editor.reset();
@@ -369,8 +366,8 @@ int main(int argc, char* argv[])
 
     special_button_layout->addWidget(spinbox_quantization, 0, 0);
     special_button_layout->addWidget(spinbox_quantization_label, 0, 1);
-    special_button_layout->addWidget(slider_brightness, 1, 0);
-    special_button_layout->addWidget(slider_brightness_label, 1, 1);
+    special_button_layout->addWidget(spinbox_brightness, 1, 0);
+    special_button_layout->addWidget(spinbox_brightness_label, 1, 1);
     special_button_layout->addWidget(button_convolution_menu, 2, 0);
     special_button_layout->addWidget(button_histogram, 2, 1);
     
@@ -408,7 +405,7 @@ int main(int argc, char* argv[])
 
     source_image_label->setPixmap(QPixmap::fromImage(editor.convertSourceToQImage()));
     new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
-    slider_brightness_label->setText("Brightness: +0");
+    spinbox_brightness_label->setText("Brightness: +0");
     spinbox_quantization_label->setText("Quantization");
         
     editable_kernel_label->setText("Custom Kernel");
