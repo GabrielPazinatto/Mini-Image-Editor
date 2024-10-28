@@ -22,7 +22,7 @@ enum Kernels{
 class ConvolutionKernels{
 
 public:
-    static const std::unordered_map<Kernels, std::vector<std::vector<double>>> kernel_map;
+    static std::unordered_map<Kernels, std::vector<std::vector<double>>> kernel_map;
 };
 
 #endif

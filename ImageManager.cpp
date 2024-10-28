@@ -31,6 +31,15 @@ void ImageManager::reset(){
     this->current_modifiers = this->previous_modifiers;
 }
 
+Histogram ImageManager::getNewImageHistogram(){
+    return this->histogram;
+}
+
+
+void ImageManager::generateNewImageHistogram(){
+    this->histogram = ImageEditing::generateHistogram(&(this->new_image));
+}
+
 void ImageManager::setNegative(){
     this->current_modifiers.is_negative = !this->current_modifiers.is_negative;
 }
@@ -48,6 +57,16 @@ void ImageManager::saveImage(std::string new_name){
 void ImageManager::setConvolutionKernel(Kernels kernel){
     this->current_modifiers.kernel = kernel;
 }
+
+void ImageManager::setConvolutionKernel(std::vector<std::vector<double>> kernel){
+    for(int i = 0 ; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            ConvolutionKernels::kernel_map[Kernels::CUSTOM][i][j] = kernel[i][j];
+        }
+    }
+    this->current_modifiers.kernel = Kernels::CUSTOM;
+}
+
 // stores the value for the quantization value
 void ImageManager::setQuantization(uint quant){
     this->current_modifiers.quantization_was_modified = true;

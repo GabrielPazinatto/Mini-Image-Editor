@@ -1,6 +1,6 @@
 #include "ConvKernels.h"
 
-const std::unordered_map<Kernels, std::vector<std::vector<double>>> ConvolutionKernels::kernel_map = {
+std::unordered_map<Kernels, std::vector<std::vector<double>>> ConvolutionKernels::kernel_map = {
     {Kernels::GAUSSIAN_LOW_PASS, { 
         {0.0625, 0.125, 0.0625},
         {0.125, 0.25, 0.125},
@@ -47,6 +47,12 @@ const std::unordered_map<Kernels, std::vector<std::vector<double>>> ConvolutionK
         {-1, -2, -1},
         {0, 0, 0},
         {1, 2, 1}
+    }},
+
+    {Kernels::CUSTOM, {
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
     }}
 };
 

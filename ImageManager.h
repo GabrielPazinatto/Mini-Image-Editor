@@ -33,6 +33,8 @@ private:
     Modifiers previous_modifiers;
     Modifiers current_modifiers;
 
+    Histogram histogram = ImageEditing::generateHistogram(&(this->new_image));
+
     int darkest_tone = 255;
     int lightest_tone = 0;
     
@@ -49,6 +51,9 @@ public:
     void setGrayScale();
     void setNegative();
     void setConvolutionKernel(Kernels kernel);
+    void setConvolutionKernel(std::vector<std::vector<double>> kernel);
+
+    void generateNewImageHistogram();
 
     void applyChanges();
 
@@ -60,6 +65,8 @@ public:
 
     bool newImageIsGrayScale();
     bool sourceImageIsGrayScale();
+
+    Histogram getNewImageHistogram();
 
     QImage convertSourceToQImage();
     QImage convertNewImageToQImage();
