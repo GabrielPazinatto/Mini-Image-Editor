@@ -41,9 +41,6 @@ void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, in
         }
     }
 
-
-
-
     if(source_image->channels() == 3){
         new_image->at<cv::Vec3b>(row, col)[RED_CHANNEL] = cv::saturate_cast<uchar>(R);
         new_image->at<cv::Vec3b>(row, col)[GREEN_CHANNEL] = cv::saturate_cast<uchar>(G);
@@ -292,4 +289,9 @@ int ImageEditing::getQuantization(cv::Mat image){
     }
 
     return lightest_tone - darkest_tone + 1;
+}
+
+Histogram ImageEditing::generateHistogram(cv::Mat* image){
+    Histogram hist = Histogram(image);
+    return hist;
 }
