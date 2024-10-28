@@ -10,7 +10,7 @@ const int BLUE_CHANNEL = 0;
 
 // performs a 180 counter-clockwise rotation
 // very weird code, but it works
-void rotateKernel(double kernel[DIM][DIM]){
+void rotateKernel(std::vector<std::vector<double>>& kernel){
     std::swap(kernel[0][0], kernel[0][2]);
     std::swap(kernel[1][0], kernel[1][2]);
     std::swap(kernel[2][0], kernel[2][2]);
@@ -55,13 +55,17 @@ void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, in
 void ImageEditing::applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel){
     int cols = image->cols;
     int rows = image->rows;
-    int channels = image->channels();
     cv::Mat image_copy = image->clone();
+
+    std::vector<std::vector<double>> kernel_copy;
+    std::copy(kernel.begin(), kernel.end(), std::back_inserter(kernel_copy));
+    
+    rotateKernel(kernel_copy);
 
     #pragma omp parallel for collapse(2)
     for(int i = 1; i < rows - 1; i++){
         for(int j = 1; j < cols - 1; j++){
-            applyConvolutionToPoint(image, &image_copy, i, j, kernel);;
+            applyConvolutionToPoint(image, &image_copy, i, j, kernel_copy);
         }
     }
 
