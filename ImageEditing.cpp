@@ -26,6 +26,7 @@ void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, in
     double B = 0;
     double L = 0;
 
+    #pragma omp parallel for collapse(2)
     for(int i = -((int)DIM/2); i < (int) DIM/2 + 1; i++){
         for(int j = -((int)DIM/2); j < (int) DIM/2 + 1; j++){
 
@@ -57,7 +58,7 @@ void ImageEditing::applyConvolution(cv::Mat* image, const std::vector<std::vecto
     int channels = image->channels();
     cv::Mat image_copy = image->clone();
 
-
+    #pragma omp parallel for collapse(2)
     for(int i = 1; i < rows - 1; i++){
         for(int j = 1; j < cols - 1; j++){
             applyConvolutionToPoint(image, &image_copy, i, j, kernel);;
