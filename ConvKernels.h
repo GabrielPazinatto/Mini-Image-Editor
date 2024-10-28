@@ -15,7 +15,8 @@ enum Kernels{
     PREWITT_VERTICAL,
     SOBEL_HORIZONTAL,
     SOBEL_VERTICAL,
-    NONE
+    NONE,
+    CUSTOM
 };
 
 class ConvolutionKernels{
