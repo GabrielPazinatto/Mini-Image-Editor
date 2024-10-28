@@ -10,6 +10,7 @@ Install the dependencies:
 sudo dnf groupinstall "Development Tools"
 sudo dnf install cmake ninja-build libxkbcommon-devel
 sudo dnf install qt6-qtbase-devel qt6-qtmultimedia-devel
+sudo dnf install qt6-qtcharts-devel
 sudo dnf install opencv-devel
 ```
 
