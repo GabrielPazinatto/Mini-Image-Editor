@@ -2,18 +2,30 @@
 #include <iostream>
 
 HistogramWidget::HistogramWidget(const QVector<double>& data, QWidget* parent = nullptr) : QWidget(parent) { 
-// Cria o conjunto de barras e adiciona os dados
+// Cria o conjunto de barras e adiciona os dados 
+    long double total = 0;
+
     QBarSet *set = new QBarSet("Values");
-    for (long double value : data) {
-        value /= *std::max_element(data.begin(), data.end()) / 100;
-        *set << value;
+    for (int i = 0 ; i < data.size(); i++){
+        *set << data[i];
+
+        if(i % 2 == 0)
+            set->setColor(QColor(255, 0, 0));
+        else
+            set->setColor(QColor(0, 0, 255));
+
+        total += data[i];
     }
 
-    set->setColor(QColor(0, 0, 0)); 
+    for(int i = 0; i < data.size(); i++){
+        set->replace(i, set->at(i) / total);
+    }
+
 
     // Cria a série de barras e adiciona o conjunto de dados
     QBarSeries *series = new QBarSeries();
     series->append(set);
+    series->setBarWidth(1);
 
     // Cria o gráfico e adiciona a série de barras
     QChart *chart = new QChart();
@@ -24,18 +36,17 @@ HistogramWidget::HistogramWidget(const QVector<double>& data, QWidget* parent = 
     QValueAxis *axisY = new QValueAxis();
     axisY->setTitleText("Valores");
     axisY->setTickCount(8);
-    axisY->setRange(0, 100);
+    axisY->setRange(0, *std::max_element(data.begin(), data.end())/total);
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
-
-    std::cout << std::endl  << *std::max_element(data.begin(), data.end()) << std::endl;
 
     // Configuração do eixo X (índices)
     QValueAxis *axisX = new QValueAxis();
 
     axisX->setRange(0, 255);
     axisX->setTitleText("Índices");
-    axisX->setTickCount(16);
+    axisX->setTickCount(18);
+    axisX->setTickInterval(16);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 

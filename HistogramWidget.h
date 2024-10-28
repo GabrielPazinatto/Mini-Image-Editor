@@ -4,6 +4,7 @@
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
 #include <QtCharts/QValueAxis>
+#include <QtCharts/QLogValueAxis>
 #include <QtCharts/QBarCategoryAxis>
 #include <QVector>
 #include <QWidget>
