@@ -8,6 +8,45 @@ const int RED_CHANNEL = 2;
 const int GREEN_CHANNEL = 1;
 const int BLUE_CHANNEL = 0;
 
+
+/*-------------------------------------
+            ROTATIONS
+-------------------------------------*/
+
+void ImageEditing::rotateImage(cv::Mat* image, bool clockwise = true){
+    int cols = image->cols;
+    int rows = image->rows;
+
+    cv::Mat new_image;
+    
+    
+    if(clockwise){
+        new_image.create(cols, rows, image->type());
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                new_image.at<cv::Vec3b>(j, rows - i - 1) = image->at<cv::Vec3b>(i, j);
+            }
+        }
+    }
+
+    else{
+        new_image.create(cols, rows, image->type());
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                new_image.at<cv::Vec3b>(cols - j - 1, i) = image->at<cv::Vec3b>(i, j);
+            }
+        }
+    }
+
+
+    *image = new_image.clone();
+}
+
+
+/*-------------------------------------
+            CONVOLUTIONS
+-------------------------------------*/
+
 // performs a 180 counter-clockwise rotation
 // very weird code, but it works
 void rotateKernel(std::vector<std::vector<double>>& kernel){
@@ -87,6 +126,10 @@ void ImageEditing::convertToNegative(cv::Mat* image){
         }
     }
 }
+
+/*-------------------------------------
+            QUANTIZATION
+-------------------------------------*/
 
 void ImageEditing::changeQuantization(cv::Mat* image, uint quant){
     int cols = image->cols;
