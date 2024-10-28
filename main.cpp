@@ -19,6 +19,7 @@
 #include <QTableWidget>
 #include <QHeaderView>
 
+#include "HistogramWidget.h"
 #include "ImageManager.h"
 
 /*-------------------------------------
@@ -44,6 +45,7 @@ int main(int argc, char* argv[])
 
     QWidget main_window;
     QWidget convolutions_window; 
+    QWidget histogram_window;
 
     /*-------------------------------------
             CONV WINDOW LAYOUTS
@@ -79,6 +81,7 @@ int main(int argc, char* argv[])
     QPushButton* button_reset_new_image = new QPushButton("Reset");
     QPushButton* button_negative = new QPushButton("Negative");
     QPushButton* button_convolution_menu = new QPushButton("Convolutions");
+    QPushButton* button_histogram = new QPushButton("Histogram");
 
     /*-------------------------------------
               CONV WINDOW BUTTONS
@@ -151,6 +154,22 @@ int main(int argc, char* argv[])
 
     QObject::connect(conv_apply_button, &QPushButton::clicked, [&](){
         convolutions_window.close();
+        std::vector<std::vector<double>> kernel(DIM, std::vector<double>(DIM, 0));
+        bool kernel_was_modified = false;
+
+        for(int i =0 ; i < DIM; i++){
+            for(int j = 0; j < DIM; j++){
+                 QTableWidgetItem *item = editable_kernel_table->item(i, j);
+                    kernel[i][j] = item->text().toDouble();
+                    if(kernel[i][j] != 0) kernel_was_modified = true;
+            }
+        }
+
+        if(kernel_was_modified){
+            editor.setConvolutionKernel(kernel);
+            editor.applyChanges();
+        }
+
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
@@ -202,11 +221,22 @@ int main(int argc, char* argv[])
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
-    
-
     /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
+
+    QObject::connect(button_histogram, &QPushButton::clicked, [&](){
+        editor.generateNewImageHistogram();
+        Histogram hist = editor.getNewImageHistogram();
+
+        auto lum = hist.getRedChannel();
+
+        QVector<double> data(lum.begin(), lum.end());
+        HistogramWidget* histogram_widget = new HistogramWidget(data, nullptr);
+
+        histogram_widget->resize(1200, 600);
+        histogram_widget->show();
+    });
 
     QObject::connect(button_convolution_menu, &QPushButton::clicked, [&](){
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
@@ -342,6 +372,7 @@ int main(int argc, char* argv[])
     special_button_layout->addWidget(slider_brightness, 1, 0);
     special_button_layout->addWidget(slider_brightness_label, 1, 1);
     special_button_layout->addWidget(button_convolution_menu, 2, 0);
+    special_button_layout->addWidget(button_histogram, 2, 1);
     
     misc_button_layout->addWidget(button_save_new_image, 0, 0);
     misc_button_layout->addWidget(button_load_image, 0, 1);
@@ -398,6 +429,7 @@ int main(int argc, char* argv[])
     main_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);    
     
     button_convolution_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    button_histogram->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     button_grayscale->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_vertical_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
@@ -435,6 +467,11 @@ int main(int argc, char* argv[])
     convolution_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
 
     /*-------------------------------------
+                MODIFY LAYOUTS    
+    -------------------------------------*/
+
+
+    /*-------------------------------------
             INITIALIZE CONV WINDOW
     -------------------------------------*/
 
@@ -451,4 +488,5 @@ int main(int argc, char* argv[])
     main_window.show();
 
     return app.exec();
+
 }
