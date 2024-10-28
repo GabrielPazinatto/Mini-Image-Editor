@@ -16,6 +16,7 @@ namespace ImageEditing{
     void convertToNegative(cv::Mat* image);
     void applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel);
     void rotateImage(cv::Mat* image, bool clockwise);
+    void changeContrast(cv::Mat* image, double modifier);
     Histogram generateHistogram(cv::Mat* image);
 
     QImage convertMatToQImage(cv::Mat* image);

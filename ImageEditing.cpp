@@ -38,10 +38,8 @@ void ImageEditing::rotateImage(cv::Mat* image, bool clockwise = true){
         }
     }
 
-
     *image = new_image.clone();
 }
-
 
 /*-------------------------------------
             CONVOLUTIONS
@@ -126,6 +124,31 @@ void ImageEditing::convertToNegative(cv::Mat* image){
         }
     }
 }
+
+void ImageEditing::changeContrast(cv::Mat* image, double modifier){
+    if(modifier <= 0 || modifier > 255) return;
+    
+    int cols = image->cols;
+    int rows = image->rows;
+    int channels = image->channels();
+    double new_value;
+
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            for(int c = 0; c < channels; c++){
+                new_value = image->at<cv::Vec3b>(i, j)[c] * modifier;
+                
+                if(new_value > 255)
+                    new_value = 255;
+                else if(new_value < 0)
+                    new_value = 0;
+                
+                image->at<cv::Vec3b>(i, j)[c] = (uchar) new_value;
+            }
+        }
+    }
+}
+
 
 /*-------------------------------------
             QUANTIZATION

@@ -73,6 +73,9 @@ int main(int argc, char* argv[])
 
     QSpinBox* spinbox_brightness = new QSpinBox;
     QSpinBox* spinbox_quantization = new QSpinBox;
+    QDoubleSpinBox* spinbox_contrast = new QDoubleSpinBox;
+    QPushButton* button_clockwise_rotation = new QPushButton("Rotate 90");
+    QPushButton* button_counter_clockwise_rotation = new QPushButton("Rotate -90");
     QPushButton* button_vertical_mirror = new QPushButton("Vertical Mirror");
     QPushButton* button_horizontal_mirror = new QPushButton("Horizontal Mirror");
     QPushButton* button_grayscale = new QPushButton("Grayscale");
@@ -128,6 +131,13 @@ int main(int argc, char* argv[])
               INITIALIZE BUTTONS
     -------------------------------------*/
 
+    spinbox_contrast->setMinimum(0);
+    spinbox_contrast->setMaximum(255);
+    spinbox_contrast->setValue(1);
+    spinbox_contrast->setMinimumSize(QSize(300, 30));
+    spinbox_contrast->setMaximumSize(QSize(900, 30));
+    spinbox_contrast->setSingleStep(0.1);
+
     spinbox_brightness_label->setAlignment(Qt::AlignLeft);
     spinbox_brightness->setMinimumSize(QSize(300, 30));
     spinbox_brightness->setMaximumSize(QSize(900, 30));
@@ -178,12 +188,14 @@ int main(int argc, char* argv[])
         editor.setConvolutionKernel(GAUSSIAN_LOW_PASS);
         editor.applyChanges();
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        main_window.adjustSize();
     });
 
     QObject::connect(conv_laplacian_n_button, &QPushButton::clicked, [&](){
         editor.setConvolutionKernel(LAPLACIAN_HIGH_PASS_NEGATIVE);
         editor.applyChanges();
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        main_window.adjustSize();
     });
 
     QObject::connect(conv_laplacian_p_button, &QPushButton::clicked, [&](){
@@ -225,6 +237,24 @@ int main(int argc, char* argv[])
     /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
+
+    QObject::connect(spinbox_contrast, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](){
+        editor.setContrastModifier(spinbox_contrast->value());
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(button_clockwise_rotation, &QPushButton::clicked, [&](){
+        editor.addClockwiseRotation();
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(button_counter_clockwise_rotation, &QPushButton::clicked, [&](){
+        editor.addCounterClockwiseRotation();
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
 
     QObject::connect(button_histogram, &QPushButton::clicked, [&](){
         editor.generateNewImageHistogram();
@@ -362,14 +392,17 @@ int main(int argc, char* argv[])
     push_button_layout->addWidget(button_vertical_mirror, 0, 0);
     push_button_layout->addWidget(button_horizontal_mirror, 0, 1);
     push_button_layout->addWidget(button_grayscale, 0, 2);
-    push_button_layout->addWidget(button_negative, 1, 1);
+    push_button_layout->addWidget(button_negative, 1, 0);
+    push_button_layout->addWidget(button_clockwise_rotation, 1, 1);
+    push_button_layout->addWidget(button_counter_clockwise_rotation, 1, 2);
 
     special_button_layout->addWidget(spinbox_quantization, 0, 0);
     special_button_layout->addWidget(spinbox_quantization_label, 0, 1);
     special_button_layout->addWidget(spinbox_brightness, 1, 0);
     special_button_layout->addWidget(spinbox_brightness_label, 1, 1);
-    special_button_layout->addWidget(button_convolution_menu, 2, 0);
-    special_button_layout->addWidget(button_histogram, 2, 1);
+    special_button_layout->addWidget(spinbox_contrast, 2, 0);
+    special_button_layout->addWidget(button_convolution_menu, 3, 0);
+    special_button_layout->addWidget(button_histogram, 3, 1);
     
     misc_button_layout->addWidget(button_save_new_image, 0, 0);
     misc_button_layout->addWidget(button_load_image, 0, 1);

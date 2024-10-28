@@ -67,6 +67,14 @@ void ImageManager::setConvolutionKernel(std::vector<std::vector<double>> kernel)
     this->current_modifiers.kernel = Kernels::CUSTOM;
 }
 
+void ImageManager::addClockwiseRotation(){
+    this->current_modifiers.clockwise_rotations++;
+}
+
+void ImageManager::addCounterClockwiseRotation(){
+    this->current_modifiers.counter_clockwise_rotations++;
+}
+
 // stores the value for the quantization value
 void ImageManager::setQuantization(uint quant){
     this->current_modifiers.quantization_was_modified = true;
@@ -91,6 +99,14 @@ void ImageManager::changeVerticalFlip(){
 // changes the flag to convert the image to gray scale
 void ImageManager::setGrayScale(){
     this->current_modifiers.is_gray_scale = true;
+}
+
+// changes the contrast modifier
+void ImageManager::setContrastModifier(double mod){ 
+    if(mod > 0 && mod <= 255){
+        this->current_modifiers.contrast = mod;
+        this->current_modifiers.contrast_was_modified = true;
+    }
 }
 
 // returns a QImage copy of the source image
@@ -148,7 +164,20 @@ void ImageManager::applyChanges(){
 
     if(current_modifiers.is_vertically_flipped){
         ImageEditing::mirrorVertical(&(this->new_image));
-    }   
+    }
+
+    for(int i = 0; i < current_modifiers.clockwise_rotations % 4; i++){
+        ImageEditing::rotateImage(&(this->new_image), true);
+    }
+
+    for(int i = 0; i < current_modifiers.counter_clockwise_rotations % 4; i++){
+        ImageEditing::rotateImage(&(this->new_image), false);
+    }
+
+    if(current_modifiers.contrast_was_modified == true){
+        ImageEditing::changeContrast(&(this->new_image), current_modifiers.contrast);
+    }
+
 }
 
 

@@ -12,13 +12,17 @@
 typedef struct Modifiers{
     short int brightness_mod = 0;
     short int quantization = -1;
-    
+    int clockwise_rotations = 0;
+    int counter_clockwise_rotations = 0;
+    double contrast = 1.0;
+
     Kernels kernel = NONE;
 
     bool is_gray_scale;
     bool is_vertically_flipped = false;
     bool is_horizontally_flipped = false;
     bool quantization_was_modified = false;
+    bool contrast_was_modified = false;
     bool is_negative = false;
 
 }Modifiers;
@@ -52,6 +56,9 @@ public:
     void setNegative();
     void setConvolutionKernel(Kernels kernel);
     void setConvolutionKernel(std::vector<std::vector<double>> kernel);
+    void addClockwiseRotation();
+    void addCounterClockwiseRotation();
+    void setContrastModifier(double mod);
 
     void generateNewImageHistogram();
 
