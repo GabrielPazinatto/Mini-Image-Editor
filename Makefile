@@ -37,7 +37,7 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = main1.0.0
-DISTDIR = /home/gabriel/Folder/Code/code-files/trab-fpi-linux/.tmp/main1.0.0
+DISTDIR = /home/grpazinatto/Folder/Code/code-files/trab-fpi-linux/.tmp/main1.0.0
 LINK          = g++
 LFLAGS        = -fopenmp -Wl,-O1 -Wl,-rpath-link,/usr/lib64
 LIBS          = $(SUBLIBS) -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc /usr/lib64/libQt6Charts.so /usr/lib64/libGLX.so /usr/lib64/libOpenGL.so /usr/lib64/libQt6OpenGLWidgets.so /usr/lib64/libQt6Widgets.so /usr/lib64/libQt6OpenGL.so /usr/lib64/libQt6Gui.so /usr/lib64/libQt6Core.so -lpthread -lGLX -lOpenGL   
@@ -55,11 +55,16 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		ImageManager.cpp \
 		ImageEditing.cpp \
-		ConvKernels.cpp 
+		ConvKernels.cpp \
+		Histogram.cpp \
+		HistogramWidget.cpp moc_HistogramWidget.cpp
 OBJECTS       = main.o \
 		ImageManager.o \
 		ImageEditing.o \
-		ConvKernels.o
+		ConvKernels.o \
+		Histogram.o \
+		HistogramWidget.o \
+		moc_HistogramWidget.o
 DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/common/unix.conf \
 		/usr/lib64/qt6/mkspecs/common/linux.conf \
@@ -101,6 +106,11 @@ DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labssharedimage_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediaquick_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_opengl.pri \
@@ -110,6 +120,7 @@ DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_packetprotocol_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_qgstreamermediaplugin_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qml.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qml_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlbuiltins.pri \
@@ -138,6 +149,7 @@ DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick3dspatialaudio_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2_private.pri \
@@ -180,6 +192,8 @@ DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quicktestutilsprivate_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_sql_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_testlib.pri \
@@ -216,10 +230,14 @@ DIST          = /usr/lib64/qt6/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt6/mkspecs/features/lex.prf \
 		project.pro ImageManager.h \
 		ImageEditing.h \
-		ConvKernels.h main.cpp \
+		ConvKernels.h \
+		Histogram.h \
+		HistogramWidget.h main.cpp \
 		ImageManager.cpp \
 		ImageEditing.cpp \
-		ConvKernels.cpp
+		ConvKernels.cpp \
+		Histogram.cpp \
+		HistogramWidget.cpp
 QMAKE_TARGET  = main
 DESTDIR       = 
 TARGET        = main
@@ -272,6 +290,11 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labssharedimage_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediaquick_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_opengl.pri \
@@ -281,6 +304,7 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_packetprotocol_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_qgstreamermediaplugin_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qml.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qml_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlbuiltins.pri \
@@ -309,6 +333,7 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick3dspatialaudio_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quick_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2_private.pri \
@@ -351,6 +376,8 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quicktestutilsprivate_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets_private.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio.pri \
+		/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_sql_private.pri \
 		/usr/lib64/qt6/mkspecs/modules/qt_lib_testlib.pri \
@@ -434,6 +461,11 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 /usr/lib64/qt6/mkspecs/modules/qt_lib_labssharedimage_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_labswavefrontmesh_private.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_multimedia_private.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediaquick_private.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_multimediawidgets_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_network.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_network_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_opengl.pri:
@@ -443,6 +475,7 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 /usr/lib64/qt6/mkspecs/modules/qt_lib_packetprotocol_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_printsupport_private.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_qgstreamermediaplugin_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_qml.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_qml_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_qmlbuiltins.pri:
@@ -471,6 +504,7 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 /usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_qmlxmllistmodel_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quick.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_quick3dspatialaudio_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quick_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quickcontrols2_private.pri:
@@ -513,6 +547,8 @@ Makefile: project.pro /usr/lib64/qt6/mkspecs/linux-g++/qmake.conf /usr/lib64/qt6
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quicktestutilsprivate_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_quickwidgets_private.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio.pri:
+/usr/lib64/qt6/mkspecs/modules/qt_lib_spatialaudio_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_sql.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_sql_private.pri:
 /usr/lib64/qt6/mkspecs/modules/qt_lib_testlib.pri:
@@ -569,8 +605,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib64/qt6/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ImageManager.h ImageEditing.h ConvKernels.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp ImageManager.cpp ImageEditing.cpp ConvKernels.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ImageManager.h ImageEditing.h ConvKernels.h Histogram.h HistogramWidget.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp ImageManager.cpp ImageEditing.cpp ConvKernels.cpp Histogram.cpp HistogramWidget.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -602,8 +638,14 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib64/qt6/mkspecs/features/data/dummy.cpp
 	g++ -pipe -fopenmp -O2 -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib64/qt6/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all:
+compiler_moc_header_make_all: moc_HistogramWidget.cpp
 compiler_moc_header_clean:
+	-$(DEL_FILE) moc_HistogramWidget.cpp
+moc_HistogramWidget.cpp: HistogramWidget.h \
+		moc_predefs.h \
+		/usr/lib64/qt6/libexec/moc
+	/usr/lib64/qt6/libexec/moc $(DEFINES) --include /home/grpazinatto/Folder/Code/code-files/trab-fpi-linux/moc_predefs.h -I/usr/lib64/qt6/mkspecs/linux-g++ -I/home/grpazinatto/Folder/Code/code-files/trab-fpi-linux -I/usr/local/include/opencv4 -I/usr/include/opencv4 -I/usr/include/qt6 -I/usr/include/qt6/QtCharts -I/usr/include/qt6/QtOpenGLWidgets -I/usr/include/qt6/QtWidgets -I/usr/include/qt6/QtOpenGL -I/usr/include/qt6/QtGui -I/usr/include/qt6/QtCore -I/usr/include/c++/14 -I/usr/include/c++/14/x86_64-redhat-linux -I/usr/include/c++/14/backward -I/usr/lib/gcc/x86_64-redhat-linux/14/include -I/usr/local/include -I/usr/include HistogramWidget.h -o moc_HistogramWidget.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
@@ -616,26 +658,39 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean 
+compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
-main.o: main.cpp ImageManager.h \
+main.o: main.cpp HistogramWidget.h \
+		ImageManager.h \
 		ImageEditing.h \
-		ConvKernels.h
+		ConvKernels.h \
+		Histogram.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 ImageManager.o: ImageManager.cpp ImageManager.h \
 		ImageEditing.h \
-		ConvKernels.h
+		ConvKernels.h \
+		Histogram.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ImageManager.o ImageManager.cpp
 
 ImageEditing.o: ImageEditing.cpp ImageEditing.h \
-		ConvKernels.h
+		ConvKernels.h \
+		Histogram.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ImageEditing.o ImageEditing.cpp
 
 ConvKernels.o: ConvKernels.cpp ConvKernels.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ConvKernels.o ConvKernels.cpp
+
+Histogram.o: Histogram.cpp Histogram.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Histogram.o Histogram.cpp
+
+HistogramWidget.o: HistogramWidget.cpp HistogramWidget.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HistogramWidget.o HistogramWidget.cpp
+
+moc_HistogramWidget.o: moc_HistogramWidget.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_HistogramWidget.o moc_HistogramWidget.cpp
 
 ####### Install
 

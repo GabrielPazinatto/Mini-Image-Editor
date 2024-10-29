@@ -73,6 +73,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "source_location": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "ALUNO.C": "cpp"
     }
 }

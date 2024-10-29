@@ -20,6 +20,7 @@
                 }
             ],
             "preLaunchTask": "Build Project",
+            "postDebugTask": "C/C++: g++ build active file",
             "miDebuggerPath": "/usr/bin/gdb",
             "logging": {
                 "engineLogging": false

@@ -14,7 +14,10 @@ typedef struct Modifiers{
     short int quantization = -1;
     int clockwise_rotations = 0;
     int counter_clockwise_rotations = 0;
+    int times_zoomed_in = 0;
     double contrast = 1.0;
+    float downScaleCoefX = 1;
+    float downScaleCoefY = 1;
 
     Kernels kernel = NONE;
 
@@ -59,6 +62,11 @@ public:
     void addClockwiseRotation();
     void addCounterClockwiseRotation();
     void setContrastModifier(double mod);
+    void setDownscaleCoefX(float sX);
+    void setDownscaleCoefY(float sY);
+    void setTimesZoomedIn(int times);
+    void increaseTimesZoomedIn();
+    void decreaseTimesZoomedIn();
 
     void generateNewImageHistogram();
 

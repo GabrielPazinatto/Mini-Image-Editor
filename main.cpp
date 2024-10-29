@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
     QWidget main_window;
     QWidget convolutions_window; 
     QWidget histogram_window;
+    QWidget zoom_window;
 
     /*-------------------------------------
             CONV WINDOW LAYOUTS
@@ -63,9 +64,19 @@ int main(int argc, char* argv[])
     QHBoxLayout* image_layout = new QHBoxLayout();
     QVBoxLayout* editor_layout = new QVBoxLayout();
 
+    QGridLayout* spinboxes_layout = new QGridLayout();
     QGridLayout* push_button_layout = new QGridLayout();
     QGridLayout* special_button_layout = new QGridLayout();
     QGridLayout* misc_button_layout = new QGridLayout();
+
+    /*-------------------------------------
+            ZOOM WINDOW LAYOUTS
+    -------------------------------------*/
+
+    QHBoxLayout* main_zoom_layout = new QHBoxLayout();
+    QVBoxLayout* zoom_editor_layout = new QVBoxLayout();
+    QGridLayout* zoom_spinboxes_layout = new QGridLayout();
+    QGridLayout* zoom_buttons_layout = new QGridLayout();
 
     /*-------------------------------------
               MAIN WINDOW BUTTONS
@@ -74,6 +85,7 @@ int main(int argc, char* argv[])
     QSpinBox* spinbox_brightness = new QSpinBox;
     QSpinBox* spinbox_quantization = new QSpinBox;
     QDoubleSpinBox* spinbox_contrast = new QDoubleSpinBox;
+    QPushButton* button_zoom_menu = new QPushButton("Zoom");
     QPushButton* button_clockwise_rotation = new QPushButton("Rotate 90");
     QPushButton* button_counter_clockwise_rotation = new QPushButton("Rotate -90");
     QPushButton* button_vertical_mirror = new QPushButton("Vertical Mirror");
@@ -85,6 +97,17 @@ int main(int argc, char* argv[])
     QPushButton* button_negative = new QPushButton("Negative");
     QPushButton* button_convolution_menu = new QPushButton("Convolutions");
     QPushButton* button_histogram = new QPushButton("Histogram");
+
+    /*-------------------------------------
+           ZOOM WINDOW BUTTONS
+    -------------------------------------*/
+
+    QDoubleSpinBox* spinbox_zoom_out_x = new QDoubleSpinBox;
+    QDoubleSpinBox* spinbox_zoom_out_y = new QDoubleSpinBox;
+    QPushButton* increase_zoom_in_button = new QPushButton("+2x");
+    QPushButton* decrease_zoom_in_button = new QPushButton("-2x");        
+    QPushButton* zoom_apply_button = new QPushButton("Apply");
+    QPushButton* zoom_clear_button = new QPushButton("Clear");
 
     /*-------------------------------------
               CONV WINDOW BUTTONS
@@ -111,6 +134,13 @@ int main(int argc, char* argv[])
     QLabel* new_image_label = new QLabel();
     QLabel* spinbox_brightness_label = new QLabel();
     QLabel* spinbox_quantization_label = new QLabel();
+    QLabel* spinbox_contrast_label = new QLabel();
+
+    /*-------------------------------------
+            ZOOM WINDOW LABELS
+    -------------------------------------*/
+
+    QLabel* zoomed_image_label = new QLabel();
 
     /*-------------------------------------
               CONV WINDOW LABELS
@@ -128,30 +158,48 @@ int main(int argc, char* argv[])
     QIcon* icon_grayscale = new QIcon("icons/grayscale.svg");
 
     /*-------------------------------------
-              INITIALIZE BUTTONS
+        INITIALIZE MAIN WINDOW BUTTONS
     -------------------------------------*/
 
     spinbox_contrast->setMinimum(0);
     spinbox_contrast->setMaximum(255);
     spinbox_contrast->setValue(1);
     spinbox_contrast->setMinimumSize(QSize(300, 30));
-    spinbox_contrast->setMaximumSize(QSize(900, 30));
+    spinbox_contrast->setMaximumSize(QSize(300, 30));
     spinbox_contrast->setSingleStep(0.1);
 
     spinbox_brightness_label->setAlignment(Qt::AlignLeft);
     spinbox_brightness->setMinimumSize(QSize(300, 30));
-    spinbox_brightness->setMaximumSize(QSize(900, 30));
+    spinbox_brightness->setMaximumSize(QSize(300, 30));
     spinbox_brightness->setMaximum(255);
     spinbox_brightness->setMinimum(-255);
     spinbox_brightness->setValue(0);
 
     spinbox_quantization_label->setAlignment(Qt::AlignLeft);
     spinbox_quantization->setMinimumSize(QSize(300, 30));
-    spinbox_quantization->setMaximumSize(QSize(900, 30));
+    spinbox_quantization->setMaximumSize(QSize(300, 30));
     spinbox_quantization->setEnabled(false);
     spinbox_quantization->setMaximum(255);
     spinbox_quantization->setMinimum(1);
     spinbox_quantization->setValue(255);
+
+    /*-------------------------------------
+        INITIALIZE ZOOM WINDOW BUTTONS
+    -------------------------------------*/
+
+    spinbox_zoom_out_x->setMinimum(1);
+    spinbox_zoom_out_x->setMaximum(10);
+    spinbox_zoom_out_x->setValue(1);
+    spinbox_zoom_out_x->setSingleStep(0.1);
+    spinbox_zoom_out_x->setMinimumSize(QSize(300, 30));
+    spinbox_zoom_out_x->setMaximumSize(QSize(300, 30));
+
+    spinbox_zoom_out_y->setMinimum(1);
+    spinbox_zoom_out_y->setMaximum(10);
+    spinbox_zoom_out_y->setValue(1);
+    spinbox_zoom_out_y->setSingleStep(0.1);
+    spinbox_zoom_out_y->setMinimumSize(QSize(300, 30));
+    spinbox_zoom_out_y->setMaximumSize(QSize(300, 30));
 
     /*-------------------------------------
              CONV BUTTONS LAMBDAS
@@ -235,6 +283,50 @@ int main(int argc, char* argv[])
     });
 
     /*-------------------------------------
+            ZOOM BUTTONS LAMBDAS
+    -------------------------------------*/
+
+    QObject::connect(spinbox_zoom_out_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](){
+        editor.setDownscaleCoefX(spinbox_zoom_out_x->value());
+        editor.applyChanges();
+        zoomed_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(spinbox_zoom_out_y, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](){
+        editor.setDownscaleCoefY(spinbox_zoom_out_y->value());
+        editor.applyChanges();
+        zoomed_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(decrease_zoom_in_button, &QPushButton::clicked, [&](){
+        editor.decreaseTimesZoomedIn();
+        editor.applyChanges();
+        zoomed_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        zoom_window.adjustSize();
+    });
+
+    QObject::connect(increase_zoom_in_button, &QPushButton::clicked, [&](){
+        editor.increaseTimesZoomedIn();
+        editor.applyChanges();
+        zoomed_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(zoom_apply_button, &QPushButton::clicked, [&](){
+        zoom_window.close();
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        zoom_window.adjustSize();
+    });
+
+    QObject::connect(zoom_clear_button, &QPushButton::clicked, [&](){
+        zoom_window.close();
+        editor.setTimesZoomedIn(0);
+        editor.setDownscaleCoefX(1);
+        editor.setDownscaleCoefY(1);
+        editor.applyChanges();
+    });
+
+    /*-------------------------------------
                BUTTONS LAMBDAS
     -------------------------------------*/
 
@@ -273,6 +365,12 @@ int main(int argc, char* argv[])
         convolution_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
         convolutions_window.show();
         convolutions_window.adjustSize();
+    });
+
+    QObject::connect(button_zoom_menu, &QPushButton::clicked, [&](){
+        zoomed_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));        
+        zoom_window.show();
+        zoom_window.adjustSize();
     });
 
     QObject::connect(button_negative, &QPushButton::clicked, [&](){
@@ -334,7 +432,7 @@ int main(int argc, char* argv[])
 
     QObject::connect(button_vertical_mirror, &QPushButton::clicked, [&editor, new_image_label](){
         editor.changeVerticalFlip();
-        editor.applyChanges();
+        editor.applyChanges();   
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
@@ -386,6 +484,24 @@ int main(int argc, char* argv[])
     predefined_kernel_layout->addWidget(conv_clear_button, 4, 1);
 
     /*-------------------------------------
+           ADD WIDGETS TO LAYOUTS (ZOOMING)
+    -------------------------------------*/
+
+    zoom_spinboxes_layout->addWidget(spinbox_zoom_out_x, 0, 0);
+    zoom_spinboxes_layout->addWidget(spinbox_zoom_out_y, 1, 0);
+    zoom_buttons_layout->addWidget(increase_zoom_in_button, 2, 0);
+    zoom_buttons_layout->addWidget(decrease_zoom_in_button, 2, 1);
+    zoom_buttons_layout->addWidget(zoom_apply_button, 3, 0);
+    zoom_buttons_layout->addWidget(zoom_clear_button, 3, 1);
+
+    main_zoom_layout->addWidget(zoomed_image_label);
+    main_zoom_layout->addLayout(zoom_editor_layout);
+    zoom_editor_layout->addLayout(zoom_spinboxes_layout);
+    zoom_editor_layout->addLayout(zoom_buttons_layout);
+
+    zoom_editor_layout->setSizeConstraint(QLayout::SetFixedSize);
+
+    /*-------------------------------------
              ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
 
@@ -396,13 +512,15 @@ int main(int argc, char* argv[])
     push_button_layout->addWidget(button_clockwise_rotation, 1, 1);
     push_button_layout->addWidget(button_counter_clockwise_rotation, 1, 2);
 
-    special_button_layout->addWidget(spinbox_quantization, 0, 0);
-    special_button_layout->addWidget(spinbox_quantization_label, 0, 1);
-    special_button_layout->addWidget(spinbox_brightness, 1, 0);
-    special_button_layout->addWidget(spinbox_brightness_label, 1, 1);
-    special_button_layout->addWidget(spinbox_contrast, 2, 0);
+    spinboxes_layout->addWidget(spinbox_quantization, 0, 1);
+    spinboxes_layout->addWidget(spinbox_quantization_label, 0, 2);
+    spinboxes_layout->addWidget(spinbox_brightness, 1, 1);
+    spinboxes_layout->addWidget(spinbox_brightness_label, 1, 2);
+    spinboxes_layout->addWidget(spinbox_contrast, 2, 1);
+    spinboxes_layout->addWidget(spinbox_contrast_label, 2, 2);
     special_button_layout->addWidget(button_convolution_menu, 3, 0);
     special_button_layout->addWidget(button_histogram, 3, 1);
+    special_button_layout->addWidget(button_zoom_menu, 3, 2);
     
     misc_button_layout->addWidget(button_save_new_image, 0, 0);
     misc_button_layout->addWidget(button_load_image, 0, 1);
@@ -426,6 +544,7 @@ int main(int argc, char* argv[])
     -------------------------------------*/
 
     editor_layout->addLayout(push_button_layout);
+    editor_layout->addLayout(spinboxes_layout);
     editor_layout->addLayout(special_button_layout);
     editor_layout->addLayout(misc_button_layout);
 
@@ -438,9 +557,11 @@ int main(int argc, char* argv[])
 
     source_image_label->setPixmap(QPixmap::fromImage(editor.convertSourceToQImage()));
     new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
-    spinbox_brightness_label->setText("Brightness: +0");
+    spinbox_brightness_label->setText("Brightness");
     spinbox_quantization_label->setText("Quantization");
-        
+    spinbox_contrast_label->setText("Contrast Modifier");
+
+
     editable_kernel_label->setText("Custom Kernel");
     editable_kernel_label->setAlignment(Qt::AlignCenter);
 
@@ -459,6 +580,7 @@ int main(int argc, char* argv[])
     main_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);    
     
     button_convolution_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    button_zoom_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     button_histogram->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     button_grayscale->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
@@ -470,6 +592,9 @@ int main(int argc, char* argv[])
     button_reset_new_image->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     button_load_image->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
+    button_clockwise_rotation->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    button_counter_clockwise_rotation ->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    
     // labels
 
     source_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
@@ -492,14 +617,29 @@ int main(int argc, char* argv[])
     conv_apply_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     conv_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
-    //editable_kernel_table->setStyleSheet(TABLE_CSS_STYLE);
-
     convolution_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
+
+    /*-------------------------------------
+            ZOOM WINDOW STYLESHEETS
+    -------------------------------------*/
+
+    zoom_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);
+    zoomed_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
+    increase_zoom_in_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    decrease_zoom_in_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    zoom_apply_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    zoom_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     /*-------------------------------------
                 MODIFY LAYOUTS    
     -------------------------------------*/
 
+    /*-------------------------------------
+           INITIALIZE ZOOM WINDOW
+    -------------------------------------*/
+
+    zoom_window.setLayout(main_zoom_layout);
+    zoom_window.setWindowTitle("Zoom");
 
     /*-------------------------------------
             INITIALIZE CONV WINDOW

@@ -67,6 +67,15 @@ void ImageManager::setConvolutionKernel(std::vector<std::vector<double>> kernel)
     this->current_modifiers.kernel = Kernels::CUSTOM;
 }
 
+void ImageManager::setDownscaleCoefX(float sX){
+    this->current_modifiers.downScaleCoefX = sX;
+}
+
+void ImageManager::setDownscaleCoefY(float sY){
+    this->current_modifiers.downScaleCoefY = sY;
+}
+
+
 void ImageManager::addClockwiseRotation(){
     this->current_modifiers.clockwise_rotations++;
 }
@@ -99,6 +108,22 @@ void ImageManager::changeVerticalFlip(){
 // changes the flag to convert the image to gray scale
 void ImageManager::setGrayScale(){
     this->current_modifiers.is_gray_scale = true;
+}
+
+// sets the times the image has been zoomed in
+void ImageManager::setTimesZoomedIn(int times){
+    this->current_modifiers.times_zoomed_in = times;
+}
+
+void ImageManager::decreaseTimesZoomedIn(){
+    if(this->current_modifiers.times_zoomed_in != 0){
+        this->current_modifiers.times_zoomed_in--;
+    }
+}
+
+// increases the times the image has been zoomed in
+void ImageManager::increaseTimesZoomedIn(){
+    this->current_modifiers.times_zoomed_in++;
 }
 
 // changes the contrast modifier
@@ -176,6 +201,14 @@ void ImageManager::applyChanges(){
 
     if(current_modifiers.contrast_was_modified == true){
         ImageEditing::changeContrast(&(this->new_image), current_modifiers.contrast);
+    }
+
+    if(current_modifiers.downScaleCoefX != 1 || current_modifiers.downScaleCoefY != 1){
+        ImageEditing::zoomOut(&(this->new_image), current_modifiers.downScaleCoefX, current_modifiers.downScaleCoefY);
+    }
+
+    for(int i = 0; i< current_modifiers.times_zoomed_in; i++){
+        ImageEditing::zoomIn(&(this->new_image));
     }
 
 }

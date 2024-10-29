@@ -16,11 +16,15 @@ SOURCES += main.cpp
 SOURCES += ImageManager.cpp
 SOURCES += ImageEditing.cpp
 SOURCES += ConvKernels.cpp
+SOURCES += Histogram.cpp
+SOURCES += HistogramWidget.cpp
 
 # Arquivos de cabeçalho
 HEADERS += ImageManager.h
 HEADERS += ImageEditing.h
 HEADERS += ConvKernels.h
+HEADERS += Histogram.h
+HEADERS += HistogramWidget.h
 
 # Definir o sistema operacional, se necessário
 unix:!macx {

@@ -8,6 +8,73 @@ const int RED_CHANNEL = 2;
 const int GREEN_CHANNEL = 1;
 const int BLUE_CHANNEL = 0;
 
+/*-------------------------------------
+             ZOOMING
+-------------------------------------*/
+
+void ImageEditing::zoomIn(cv::Mat* image){
+    int cols = image->cols;
+    int rows = image->rows;
+    int channels = image->channels();
+    double new_value;
+    std::array<double, 3> pixel;
+
+    cv::Mat new_image = cv::Mat::zeros(rows*2, cols*2, image->type());
+
+    for(int i = 0 ; i < rows*2; i+=2){
+        for(int j = 0; j < cols*2; j+=2){
+            for(int c = 0; c < channels; c++){
+                new_image.at<cv::Vec3b>(i, j)[c] = image->at<cv::Vec3b>(i/2, j/2)[c];
+            }
+        }
+    }
+
+    for(int i = 0; i < rows*2; i+=2){
+        for(int j = 0; j < cols*2; j+=2){
+            for(int c = 0; c < channels; c++){
+                if(j + 2 < cols*2){
+                    new_value = (image->at<cv::Vec3b>(i/2, (j/2) - 1)[c] + image->at<cv::Vec3b>(i/2, (j/2) + 1)[c]) / 2;
+                    new_image.at<cv::Vec3b>(i, j + 1)[c] = cv::saturate_cast<uchar>(new_value);
+                }
+            }
+        }
+    }
+
+    *image = new_image.clone();
+}
+
+
+void ImageEditing::zoomOut(cv::Mat* image, float sX, float sY){
+    if(sX < 1 || sY < 1) return;
+    
+    int cols = image->cols;
+    int rows = image->rows;
+    int channels = image->channels();
+    std::array<double, 3> pixel;
+
+    cv::Mat new_image = cv::Mat::zeros(rows/sY, cols/sX, image->type());
+
+    for(int i = 0 ; i < rows/sY; i++){              
+        for(int j = 0; j < cols/sX; j++){
+            pixel = {0, 0, 0};
+            for(int k = 0; k < sX; k++){
+                for(int l = 0; l < sY; l++){
+                    for(int c = 0; c < channels; c++){
+                        if(i*sY + l >= rows || j*sX + k >= cols) continue;
+                        pixel[c] += image->at<cv::Vec3b>(i*sY + l, j*sX + k)[c];
+                    }
+                }
+            }
+        
+        for(int c = 0; c < channels; c++){
+            if(i >= new_image.rows || j >= new_image.cols) continue;
+            new_image.at<cv::Vec3b>(i, j)[c] = cv::saturate_cast<uchar>(pixel[c] / (sX * sY));
+        }
+
+        }
+    }
+    *image = new_image.clone();
+}
 
 /*-------------------------------------
             ROTATIONS
