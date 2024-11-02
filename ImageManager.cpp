@@ -134,6 +134,10 @@ void ImageManager::setContrastModifier(double mod){
     }
 }
 
+void ImageManager::setHistogramEqualized(){
+    this->current_modifiers.has_histogram_equalized = !this->current_modifiers.has_histogram_equalized;
+}
+
 // returns a QImage copy of the source image
 QImage ImageManager::convertSourceToQImage(){
     return ImageEditing::convertMatToQImage(&(this->source_image));
@@ -159,9 +163,19 @@ bool ImageManager::sourceImageIsGrayScale(){
     return this->previous_modifiers.is_gray_scale;
 }
 
+
+
 // EFFECTIVELY applies the changes to the new image
 void ImageManager::applyChanges(){
     this->new_image = this->source_image.clone();
+
+    if(current_modifiers.is_gray_scale){
+        ImageEditing::convertToGrayScale(&(this->new_image));
+    }
+
+    if(current_modifiers.has_histogram_equalized){
+        ImageEditing::equalizeHistogram(&(this->new_image), this->current_modifiers.is_gray_scale);
+    }
 
     if(current_modifiers.quantization_was_modified){
         ImageEditing::changeQuantization(&(this->new_image), this->current_modifiers.quantization);
@@ -174,10 +188,6 @@ void ImageManager::applyChanges(){
     if(current_modifiers.is_negative){
         ImageEditing::convertToNegative(&(this->new_image));
     }   
-
-    if(current_modifiers.is_gray_scale){
-        ImageEditing::convertToGrayScale(&(this->new_image));
-    }
 
     if(current_modifiers.is_horizontally_flipped){
         ImageEditing::mirrorHorizontal(&(this->new_image));

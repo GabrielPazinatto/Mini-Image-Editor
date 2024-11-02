@@ -48,13 +48,6 @@ int main(int argc, char* argv[])
     QWidget histogram_window;
     QWidget zoom_window;
 
-    /*-------------------------------------
-            CONV WINDOW LAYOUTS
-    -------------------------------------*/
-
-    QHBoxLayout* main_conv_layout = new QHBoxLayout();
-    QVBoxLayout* kernel_select_layout = new QVBoxLayout();
-    QGridLayout* predefined_kernel_layout = new QGridLayout();
 
     /*-------------------------------------
             MAIN WINDOW LAYOUTS
@@ -68,6 +61,26 @@ int main(int argc, char* argv[])
     QGridLayout* push_button_layout = new QGridLayout();
     QGridLayout* special_button_layout = new QGridLayout();
     QGridLayout* misc_button_layout = new QGridLayout();
+
+    /*-------------------------------------
+             HISTOGRAM WINDOW LAYOUTS
+    -------------------------------------*/
+
+    QHBoxLayout* main_histogram_layout = new QHBoxLayout();
+    QHBoxLayout* image_histogram_layout = new QHBoxLayout();
+    QVBoxLayout* histogram_editor_layout = new QVBoxLayout();
+    QVBoxLayout* histogram_buttons_layout = new QVBoxLayout();
+    QGridLayout* histogram_action_buttons_layout = new QGridLayout();
+    QGridLayout* histogram_special_buttons_layout = new QGridLayout();
+
+
+    /*-------------------------------------
+            CONV WINDOW LAYOUTS
+    -------------------------------------*/
+
+    QHBoxLayout* main_conv_layout = new QHBoxLayout();
+    QVBoxLayout* kernel_select_layout = new QVBoxLayout();
+    QGridLayout* predefined_kernel_layout = new QGridLayout();
 
     /*-------------------------------------
             ZOOM WINDOW LAYOUTS
@@ -96,7 +109,14 @@ int main(int argc, char* argv[])
     QPushButton* button_reset_new_image = new QPushButton("Reset");
     QPushButton* button_negative = new QPushButton("Negative");
     QPushButton* button_convolution_menu = new QPushButton("Convolutions");
-    QPushButton* button_histogram = new QPushButton("Histogram");
+    QPushButton* button_histogram_menu = new QPushButton("Histogram");
+
+    /*-------------------------------------
+           HISTOGRAM WINDOW BUTTONS
+    -------------------------------------*/
+    
+    QPushButton* histogram_equalize_button = new QPushButton("Equalize");
+    QPushButton* histogram_match_button = new QPushButton("Match");
 
     /*-------------------------------------
            ZOOM WINDOW BUTTONS
@@ -135,6 +155,13 @@ int main(int argc, char* argv[])
     QLabel* spinbox_brightness_label = new QLabel();
     QLabel* spinbox_quantization_label = new QLabel();
     QLabel* spinbox_contrast_label = new QLabel();
+
+    /*-------------------------------------
+            HISTOGRAM WINDOW LABELS
+    -------------------------------------*/
+
+    QLabel* editable_histogram_image_label = new QLabel();
+    QLabel* reference_histogram_image_label = new QLabel();
 
     /*-------------------------------------
             ZOOM WINDOW LABELS
@@ -200,6 +227,18 @@ int main(int argc, char* argv[])
     spinbox_zoom_out_y->setSingleStep(0.1);
     spinbox_zoom_out_y->setMinimumSize(QSize(300, 30));
     spinbox_zoom_out_y->setMaximumSize(QSize(300, 30));
+
+    /*-------------------------------------
+             HIST BUTTONS LAMBDAS
+    -------------------------------------*/
+
+    QObject::connect(histogram_equalize_button, &QPushButton::clicked, [&](){
+        editor.setHistogramEqualized();
+        editor.applyChanges();
+
+        editable_histogram_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
 
     /*-------------------------------------
              CONV BUTTONS LAMBDAS
@@ -315,7 +354,8 @@ int main(int argc, char* argv[])
         zoom_window.close();
         editor.applyChanges();
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
-        zoom_window.adjustSize();
+        new_image_label->adjustSize();
+        main_window.adjustSize();
     });
 
     QObject::connect(zoom_clear_button, &QPushButton::clicked, [&](){
@@ -324,6 +364,8 @@ int main(int argc, char* argv[])
         editor.setDownscaleCoefX(1);
         editor.setDownscaleCoefY(1);
         editor.applyChanges();
+        new_image_label->adjustSize();
+        main_window.adjustSize();
     });
 
     /*-------------------------------------
@@ -348,17 +390,10 @@ int main(int argc, char* argv[])
         new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
-    QObject::connect(button_histogram, &QPushButton::clicked, [&](){
-        editor.generateNewImageHistogram();
-        Histogram hist = editor.getNewImageHistogram();
-
-        auto lum = hist.getRedChannel();
-
-        QVector<double> data(lum.begin(), lum.end());
-        HistogramWidget* histogram_widget = new HistogramWidget(data, nullptr);
-
-        histogram_widget->resize(1200, 600);
-        histogram_widget->show();
+    QObject::connect(button_histogram_menu, &QPushButton::clicked, [&](){
+        editable_histogram_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        histogram_window.show();
+        histogram_window.adjustSize();
     });
 
     QObject::connect(button_convolution_menu, &QPushButton::clicked, [&](){
@@ -469,9 +504,12 @@ int main(int argc, char* argv[])
     }
 
     /*-------------------------------------
-           ADD WIDGETS TO LAYOUTS (CONV)
+           CONV ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
 
+    main_conv_layout->addWidget(convolution_image_label);
+    kernel_select_layout->addWidget(editable_kernel_label);
+    kernel_select_layout->addWidget(editable_kernel_table);
     predefined_kernel_layout->addWidget(conv_gaussian_button, 0, 0);
     predefined_kernel_layout->addWidget(conv_high_boost_button, 0, 1);
     predefined_kernel_layout->addWidget(conv_laplacian_n_button, 1, 0);
@@ -484,7 +522,17 @@ int main(int argc, char* argv[])
     predefined_kernel_layout->addWidget(conv_clear_button, 4, 1);
 
     /*-------------------------------------
-           ADD WIDGETS TO LAYOUTS (ZOOMING)
+        HISTOGRAM ADD WIDGETS TO LAYOUTS
+    -------------------------------------*/
+
+    image_histogram_layout->addWidget(reference_histogram_image_label);
+    image_histogram_layout->addWidget(editable_histogram_image_label);
+    
+    histogram_action_buttons_layout->addWidget(histogram_equalize_button, 0, 0);
+    histogram_action_buttons_layout->addWidget(histogram_match_button, 0, 1);
+
+    /*-------------------------------------
+        ZOOM ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
 
     zoom_spinboxes_layout->addWidget(spinbox_zoom_out_x, 0, 0);
@@ -493,16 +541,10 @@ int main(int argc, char* argv[])
     zoom_buttons_layout->addWidget(decrease_zoom_in_button, 2, 1);
     zoom_buttons_layout->addWidget(zoom_apply_button, 3, 0);
     zoom_buttons_layout->addWidget(zoom_clear_button, 3, 1);
-
     main_zoom_layout->addWidget(zoomed_image_label);
-    main_zoom_layout->addLayout(zoom_editor_layout);
-    zoom_editor_layout->addLayout(zoom_spinboxes_layout);
-    zoom_editor_layout->addLayout(zoom_buttons_layout);
-
-    zoom_editor_layout->setSizeConstraint(QLayout::SetFixedSize);
 
     /*-------------------------------------
-             ADD WIDGETS TO LAYOUTS
+             MAIN ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
 
     push_button_layout->addWidget(button_vertical_mirror, 0, 0);
@@ -519,7 +561,7 @@ int main(int argc, char* argv[])
     spinboxes_layout->addWidget(spinbox_contrast, 2, 1);
     spinboxes_layout->addWidget(spinbox_contrast_label, 2, 2);
     special_button_layout->addWidget(button_convolution_menu, 3, 0);
-    special_button_layout->addWidget(button_histogram, 3, 1);
+    special_button_layout->addWidget(button_histogram_menu, 3, 1);
     special_button_layout->addWidget(button_zoom_menu, 3, 2);
     
     misc_button_layout->addWidget(button_save_new_image, 0, 0);
@@ -530,14 +572,32 @@ int main(int argc, char* argv[])
     image_layout->addWidget(new_image_label);
 
     /*-------------------------------------
-            ADD LAYOUTS TO CONV WINDOW 
+                HIST ADD LAYOUTS 
+    -------------------------------------*/
+
+    histogram_buttons_layout->addLayout(histogram_action_buttons_layout);
+    histogram_buttons_layout->addLayout(histogram_special_buttons_layout);
+    histogram_editor_layout->addLayout(histogram_buttons_layout);
+
+    main_histogram_layout->addLayout(image_histogram_layout);    
+    histogram_editor_layout->addLayout(histogram_buttons_layout);
+    main_histogram_layout->addLayout(histogram_editor_layout);
+
+    /*-------------------------------------
+                CONV ADD LAYOUTS 
     -------------------------------------*/
     
-    main_conv_layout->addWidget(convolution_image_label);
     main_conv_layout->addLayout(kernel_select_layout);
     kernel_select_layout->addLayout(predefined_kernel_layout);
-    kernel_select_layout->addWidget(editable_kernel_label);
-    kernel_select_layout->addWidget(editable_kernel_table);
+
+    /*-------------------------------------
+                ZOOM ADD LAYOUTS 
+    -------------------------------------*/
+
+    main_zoom_layout->addLayout(zoom_editor_layout);
+    zoom_editor_layout->addLayout(zoom_spinboxes_layout);
+    zoom_editor_layout->addLayout(zoom_buttons_layout);
+    zoom_editor_layout->setSizeConstraint(QLayout::SetFixedSize);
 
     /*-------------------------------------
             ADD LAYOUTS TO MAIN WINDOW 
@@ -561,7 +621,6 @@ int main(int argc, char* argv[])
     spinbox_quantization_label->setText("Quantization");
     spinbox_contrast_label->setText("Contrast Modifier");
 
-
     editable_kernel_label->setText("Custom Kernel");
     editable_kernel_label->setAlignment(Qt::AlignCenter);
 
@@ -581,7 +640,7 @@ int main(int argc, char* argv[])
     
     button_convolution_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     button_zoom_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
-    button_histogram->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    button_histogram_menu->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     button_grayscale->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     button_vertical_mirror->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
@@ -631,8 +690,21 @@ int main(int argc, char* argv[])
     zoom_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     /*-------------------------------------
-                MODIFY LAYOUTS    
+            HIST WINDOW STYLESHEETS
     -------------------------------------*/
+
+    histogram_window.setStyleSheet(MAIN_WINDOW_CSS_STYLE);
+    editable_histogram_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
+    reference_histogram_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
+    histogram_equalize_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    histogram_match_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+
+    /*-------------------------------------
+            INITIALIZE HIST WINDOW   
+    -------------------------------------*/
+
+    histogram_window.setLayout(main_histogram_layout);
+    histogram_window.setWindowTitle("Histogram");
 
     /*-------------------------------------
            INITIALIZE ZOOM WINDOW

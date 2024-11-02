@@ -4,3 +4,4 @@
 main
 *.pdf
 *.docx
+moc_*

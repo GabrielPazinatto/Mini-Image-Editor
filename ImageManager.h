@@ -10,6 +10,8 @@
 // SÓ REALIZAR OPERAÇÕES AO CONVERTER A IMAGME
 
 typedef struct Modifiers{
+    cv::Mat histogram_reference_image;
+
     short int brightness_mod = 0;
     short int quantization = -1;
     int clockwise_rotations = 0;
@@ -27,6 +29,8 @@ typedef struct Modifiers{
     bool quantization_was_modified = false;
     bool contrast_was_modified = false;
     bool is_negative = false;
+    bool has_histogram_equalized = false;
+    bool has_histogram_matched = false;
 
 }Modifiers;
 
@@ -67,6 +71,7 @@ public:
     void setTimesZoomedIn(int times);
     void increaseTimesZoomedIn();
     void decreaseTimesZoomedIn();
+    void setHistogramEqualized();
 
     void generateNewImageHistogram();
 

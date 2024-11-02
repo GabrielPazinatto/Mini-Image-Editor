@@ -17,7 +17,6 @@ void ImageEditing::zoomIn(cv::Mat* image){
     int rows = image->rows;
     int channels = image->channels();
     double new_value;
-    std::array<double, 3> pixel;
 
     cv::Mat new_image = cv::Mat::zeros(rows*2, cols*2, image->type());
 
@@ -29,13 +28,34 @@ void ImageEditing::zoomIn(cv::Mat* image){
         }
     }
 
-    for(int i = 0; i < rows*2; i+=2){
-        for(int j = 0; j < cols*2; j+=2){
-            for(int c = 0; c < channels; c++){
-                if(j + 2 < cols*2){
-                    new_value = (image->at<cv::Vec3b>(i/2, (j/2) - 1)[c] + image->at<cv::Vec3b>(i/2, (j/2) + 1)[c]) / 2;
-                    new_image.at<cv::Vec3b>(i, j + 1)[c] = cv::saturate_cast<uchar>(new_value);
-                }
+    for (int i = 0; i < rows * 2; i += 2) {
+        for (int j = 1; j < cols * 2 - 1; j += 2) {
+            for (int c = 0; c < channels; c++) {
+                double left_value = new_image.at<cv::Vec3b>(i, j - 1)[c];
+                double right_value = new_image.at<cv::Vec3b>(i, j + 1)[c];
+                new_image.at<cv::Vec3b>(i, j)[c] = cv::saturate_cast<uchar>((left_value + right_value) / 2.0);
+            }
+        }
+    }
+
+    for (int i = 1; i < rows * 2 - 1; i += 2) {
+        for (int j = 0; j < cols * 2; j++) {
+            for (int c = 0; c < channels; c++) {
+                double top_value = new_image.at<cv::Vec3b>(i - 1, j)[c];
+                double bottom_value = new_image.at<cv::Vec3b>(i + 1, j)[c];
+                new_image.at<cv::Vec3b>(i, j)[c] = cv::saturate_cast<uchar>((top_value + bottom_value) / 2.0);
+            }
+        }
+    }
+
+    for (int i = 1; i < rows * 2 - 1; i += 2) {
+        for (int j = 1; j < cols * 2 - 1; j += 2) {
+            for (int c = 0; c < channels; c++) {
+                double top_left = new_image.at<cv::Vec3b>(i - 1, j - 1)[c];
+                double top_right = new_image.at<cv::Vec3b>(i - 1, j + 1)[c];
+                double bottom_left = new_image.at<cv::Vec3b>(i + 1, j - 1)[c];
+                double bottom_right = new_image.at<cv::Vec3b>(i + 1, j + 1)[c];
+                new_image.at<cv::Vec3b>(i, j)[c] = cv::saturate_cast<uchar>((top_left + top_right + bottom_left + bottom_right) / 4.0);
             }
         }
     }
@@ -429,7 +449,59 @@ int ImageEditing::getQuantization(cv::Mat image){
     return lightest_tone - darkest_tone + 1;
 }
 
-Histogram ImageEditing::generateHistogram(cv::Mat* image){
+
+/*-------------------------------------
+             HISTOGRAM
+-------------------------------------*/
+
+Histogram ImageEditing::generateHistogram(const cv::Mat* image){
     Histogram hist = Histogram(image);
     return hist;
+}
+
+Histogram ImageEditing::generateCumulativeHistogram(const cv::Mat* image){
+    Histogram hist = Histogram(image, true);
+    return hist;
+}
+
+void ImageEditing::equalizeHistogram(cv::Mat* image, bool image_is_grayscale){
+    Histogram hist_cum = Histogram(image, true);
+    std::vector<double> L = hist_cum.getLuminanceChannel();
+    std::vector<double> R = hist_cum.getRedChannel();
+    std::vector<double> G = hist_cum.getGreenChannel();
+    std::vector<double> B = hist_cum.getBlueChannel();
+
+    int cols = image->cols;
+    int rows = image->rows;
+
+
+    if(image_is_grayscale || image->channels() == 1){
+        std::cout << "Gray image" << std::endl;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                image->at<cv::Vec3b>(i, j)[RED_CHANNEL] = R[image->at<cv::Vec3b>(i, j)[RED_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL] = G[image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL] = B[image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL]];
+            }
+        }
+    }
+    else{
+        std::cout << "Color image" << std::endl;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                
+                image->at<cv::Vec3b>(i, j)[RED_CHANNEL] = R[image->at<cv::Vec3b>(i, j)[RED_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL] = G[image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL] = B[image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL]];
+            }
+        }
+
+
+
+
+    }
+}
+
+void ImageEditing::matchHistogram(cv::Mat* image, const cv::Mat* reference){
+
 }
