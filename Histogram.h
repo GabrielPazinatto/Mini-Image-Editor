@@ -12,7 +12,7 @@ class Histogram{
 
     public:
 
-        Histogram(cv::Mat* image);
+        Histogram(const cv::Mat* image, bool cumulative = false);
 
         std::vector<double>& getRedChannel();
         std::vector<double>& getGreenChannel();
