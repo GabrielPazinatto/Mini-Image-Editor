@@ -3,7 +3,6 @@
 
 HistogramWidget::HistogramWidget(const std::vector<double> data, QWidget* parent = nullptr, QString chart_tile = "Histogram") : QWidget(parent) { 
 // Cria o conjunto de barras e adiciona os dados 
-    long double total = 0;
     QVector<double> q_data;
 
     for(double d: data){
@@ -18,14 +17,11 @@ HistogramWidget::HistogramWidget(const std::vector<double> data, QWidget* parent
             set->setColor(QColor(255, 0, 0));
         else
             set->setColor(QColor(0, 0, 255));
-
-        total += q_data[i];
     }
 
     for(int i = 0; i < q_data.size(); i++){
-        set->replace(i, set->at(i) / total);
+        set->replace(i, set->at(i));
     }
-
 
     // Cria a série de barras e adiciona o conjunto de dados
     QBarSeries *series = new QBarSeries();
@@ -41,7 +37,7 @@ HistogramWidget::HistogramWidget(const std::vector<double> data, QWidget* parent
     QValueAxis *axisY = new QValueAxis();
     axisY->setTitleText("Valores");
     axisY->setTickCount(8);
-    axisY->setRange(0, *std::max_element(q_data.begin(), q_data.end())/total);
+    axisY->setRange(0, *std::max_element(q_data.begin(), q_data.end()));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 

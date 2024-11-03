@@ -144,7 +144,7 @@ void rotateKernel(std::vector<std::vector<double>>& kernel){
     }
 }
 
-void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, int row, int col, const std::vector<std::vector<double>> kernel){
+void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, int row, int col, const std::vector<std::vector<double>> kernel, bool sum_127){
     double R = 0; 
     double G = 0; 
     double B = 0;
@@ -167,16 +167,22 @@ void applyConvolutionToPoint(const cv::Mat* source_image, cv::Mat* new_image, in
     }
 
     if(source_image->channels() == 3){
+        if(sum_127){
+            R += 127;
+            G += 127;
+            B += 127;
+        }
         new_image->at<cv::Vec3b>(row, col)[RED_CHANNEL] = cv::saturate_cast<uchar>(R);
         new_image->at<cv::Vec3b>(row, col)[GREEN_CHANNEL] = cv::saturate_cast<uchar>(G);
         new_image->at<cv::Vec3b>(row, col)[BLUE_CHANNEL] = cv::saturate_cast<uchar>(B);
     }
     else if (source_image->channels() == 1){
+        if(sum_127) L += 127;
         new_image->at<uchar>(row, col) = cv::saturate_cast<uchar>(L);
     }
 }
 
-void ImageEditing::applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel){
+void ImageEditing::applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel, bool sum_127){
     int cols = image->cols;
     int rows = image->rows;
     cv::Mat image_copy = image->clone();
@@ -189,7 +195,7 @@ void ImageEditing::applyConvolution(cv::Mat* image, const std::vector<std::vecto
     #pragma omp parallel for collapse(2)
     for(int i = 1; i < rows - 1; i++){
         for(int j = 1; j < cols - 1; j++){
-            applyConvolutionToPoint(image, &image_copy, i, j, kernel_copy);
+            applyConvolutionToPoint(image, &image_copy, i, j, kernel_copy, sum_127);
         }
     }
 

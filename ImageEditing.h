@@ -14,7 +14,7 @@ namespace ImageEditing{
     void mirrorHorizontal(cv::Mat* image);
     void changeQuantization(cv::Mat* image, uint quant);
     void convertToNegative(cv::Mat* image);
-    void applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel);
+    void applyConvolution(cv::Mat* image, const std::vector<std::vector<double>> kernel, bool sum_127 = true);
     void rotateImage(cv::Mat* image, bool clockwise);
     void changeContrast(cv::Mat* image, double modifier);
     void zoomOut(cv::Mat* image, float sX, float sY);

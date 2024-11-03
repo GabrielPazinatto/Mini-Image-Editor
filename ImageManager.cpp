@@ -214,7 +214,8 @@ void ImageManager::applyChanges(){
     }
 
     if(current_modifiers.kernel != Kernels::NONE){
-        ImageEditing::applyConvolution(&(this->new_image), ConvolutionKernels::kernel_map.at(current_modifiers.kernel));
+        bool sum_127 = current_modifiers.kernel != GAUSSIAN_LOW_PASS;
+        ImageEditing::applyConvolution(&(this->new_image), ConvolutionKernels::kernel_map.at(current_modifiers.kernel), sum_127);
     }
 
     if(current_modifiers.is_vertically_flipped){

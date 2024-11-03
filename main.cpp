@@ -66,6 +66,8 @@ int main(int argc, char* argv[])
              HISTOGRAM WINDOW LAYOUTS
     -------------------------------------*/
 
+    
+    QPushButton* show_histogram_button = new QPushButton("Histogram");
     QVBoxLayout* main_histogram_exhibit_layout = new QVBoxLayout();
     QHBoxLayout* main_histogram_layout = new QHBoxLayout();
     QHBoxLayout* image_histogram_layout = new QHBoxLayout();
@@ -73,8 +75,9 @@ int main(int argc, char* argv[])
     QVBoxLayout* histogram_buttons_layout = new QVBoxLayout();
     QGridLayout* histogram_action_buttons_layout = new QGridLayout();
     QGridLayout* histogram_special_buttons_layout = new QGridLayout();
-    HistogramWidget* original_hist_widget;
-    HistogramWidget* new_hist_widget;
+    HistogramWidget* original_hist_widget= nullptr;
+    HistogramWidget* new_hist_widget = nullptr;
+    HistogramWidget* hist_widget = nullptr;
 
     /*-------------------------------------
             CONV WINDOW LAYOUTS
@@ -119,7 +122,6 @@ int main(int argc, char* argv[])
     
     QPushButton* histogram_equalize_button = new QPushButton("Equalize");
     QPushButton* histogram_match_button = new QPushButton("Match");
-    QPushButton* histogram_load_reference_button = new QPushButton("Load Reference");
     QPushButton* histogram_apply_button = new QPushButton("Apply");
     QPushButton* histogram_clear_button = new QPushButton("Clear");
 
@@ -237,28 +239,40 @@ int main(int argc, char* argv[])
              HIST BUTTONS LAMBDAS
     -------------------------------------*/
 
+    QObject::connect(show_histogram_button, &QPushButton::clicked, [&](){
+        if(hist_widget != nullptr){
+            hist_widget->close();
+        }
+        hist_widget = new HistogramWidget(Histogram(editor.getNewImage()).getLuminanceChannel(), nullptr, "Histogram");
+        hist_widget->setMinimumSize(800, 400);
+        hist_widget->setWindowTitle("Histogram");
+        hist_widget->adjustSize();
+        hist_widget->show();
+    });
+
     QObject::connect(histogram_equalize_button, &QPushButton::clicked, [&](){
         std::vector<double> old_histogram = Histogram(editor.getNewImage()).getLuminanceChannel();        
         editor.setHistogramEqualized();
         editor.applyChanges();
         editable_histogram_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
-        std::vector<double> new_histogram = Histogram(editor.getNewImage()).getLuminanceChannel();
 
+        if(editor.newImageIsGrayScale()){
+            std::vector<double> new_histogram = Histogram(editor.getNewImage()).getLuminanceChannel();
+            original_hist_widget = new HistogramWidget(old_histogram, nullptr, "Original Histogram");
+            original_hist_widget->setMinimumSize(800, 400);
+            
+            new_hist_widget = new HistogramWidget(new_histogram, nullptr, "Equalized Histogram");
+            new_hist_widget->setMinimumSize(800, 400);
+            new_hist_widget->setWindowTitle("Equalized Histogram");
 
-        original_hist_widget = new HistogramWidget(old_histogram, nullptr, "Original Histogram");
-        original_hist_widget->setMinimumSize(800, 400);
-        
-        new_hist_widget = new HistogramWidget(new_histogram, nullptr, "Equalized Histogram");
-        new_hist_widget->setMinimumSize(800, 400);
-        new_hist_widget->setWindowTitle("Equalized Histogram");
+            histogram_exhibit_window.setWindowTitle("Histograms");
 
-        histogram_exhibit_window.setWindowTitle("Histograms");
-
-        histogram_exhibit_window.layout()->addWidget(original_hist_widget);
-        histogram_exhibit_window.layout()->addWidget(new_hist_widget);  
-        
-        histogram_exhibit_window.adjustSize();
-        histogram_exhibit_window.show();
+            histogram_exhibit_window.layout()->addWidget(original_hist_widget);
+            histogram_exhibit_window.layout()->addWidget(new_hist_widget);  
+            
+            histogram_exhibit_window.adjustSize();
+            histogram_exhibit_window.show();
+        }
     });
 
     QObject::connect(histogram_match_button, &QPushButton::clicked, [&](){
@@ -583,9 +597,9 @@ int main(int argc, char* argv[])
     histogram_action_buttons_layout->addWidget(histogram_equalize_button, 0, 0);
     histogram_action_buttons_layout->addWidget(histogram_match_button, 0, 1);
 
-    histogram_special_buttons_layout->addWidget(histogram_load_reference_button, 1, 0);
-    histogram_special_buttons_layout->addWidget(histogram_apply_button, 2, 0);
-    histogram_special_buttons_layout->addWidget(histogram_clear_button, 3, 0);
+    histogram_special_buttons_layout->addWidget(show_histogram_button, 0, 0);
+    histogram_special_buttons_layout->addWidget(histogram_apply_button, 1, 0);
+    histogram_special_buttons_layout->addWidget(histogram_clear_button, 2, 0);
 
 
     /*-------------------------------------
@@ -756,8 +770,8 @@ int main(int argc, char* argv[])
     editable_histogram_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
     reference_histogram_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
     histogram_equalize_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    show_histogram_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     histogram_match_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
-    histogram_load_reference_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     histogram_apply_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
     histogram_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
