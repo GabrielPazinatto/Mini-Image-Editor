@@ -1,23 +1,28 @@
 #include "HistogramWidget.h"
 #include <iostream>
 
-HistogramWidget::HistogramWidget(const QVector<double>& data, QWidget* parent = nullptr) : QWidget(parent) { 
+HistogramWidget::HistogramWidget(const std::vector<double> data, QWidget* parent = nullptr, QString chart_tile = "Histogram") : QWidget(parent) { 
 // Cria o conjunto de barras e adiciona os dados 
     long double total = 0;
+    QVector<double> q_data;
+
+    for(double d: data){
+        q_data.push_back(d);
+    }
 
     QBarSet *set = new QBarSet("Values");
-    for (int i = 0 ; i < data.size(); i++){
-        *set << data[i];
+    for (int i = 0 ; i < q_data.size(); i++){
+        *set << q_data[i];
 
         if(i % 2 == 0)
             set->setColor(QColor(255, 0, 0));
         else
             set->setColor(QColor(0, 0, 255));
 
-        total += data[i];
+        total += q_data[i];
     }
 
-    for(int i = 0; i < data.size(); i++){
+    for(int i = 0; i < q_data.size(); i++){
         set->replace(i, set->at(i) / total);
     }
 
@@ -30,13 +35,13 @@ HistogramWidget::HistogramWidget(const QVector<double>& data, QWidget* parent = 
     // Cria o gráfico e adiciona a série de barras
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Histograma");
+    chart->setTitle(chart_tile);
 
     // Configuração do eixo Y (valores)
     QValueAxis *axisY = new QValueAxis();
     axisY->setTitleText("Valores");
     axisY->setTickCount(8);
-    axisY->setRange(0, *std::max_element(data.begin(), data.end())/total);
+    axisY->setRange(0, *std::max_element(q_data.begin(), q_data.end())/total);
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 

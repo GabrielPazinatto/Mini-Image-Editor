@@ -14,6 +14,6 @@ class HistogramWidget : public QWidget {
     Q_OBJECT
 
 public:
-    HistogramWidget(const QVector<double>& data, QWidget* parent); 
+    HistogramWidget(const std::vector<double> data, QWidget* parent, QString chart_title); 
 };
 
