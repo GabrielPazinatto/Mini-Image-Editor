@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     QWidget convolutions_window; 
     QWidget histogram_window;
     QWidget zoom_window;
-
+    QWidget histogram_exhibit_window;
 
     /*-------------------------------------
             MAIN WINDOW LAYOUTS
@@ -66,13 +66,15 @@ int main(int argc, char* argv[])
              HISTOGRAM WINDOW LAYOUTS
     -------------------------------------*/
 
+    QVBoxLayout* main_histogram_exhibit_layout = new QVBoxLayout();
     QHBoxLayout* main_histogram_layout = new QHBoxLayout();
     QHBoxLayout* image_histogram_layout = new QHBoxLayout();
     QVBoxLayout* histogram_editor_layout = new QVBoxLayout();
     QVBoxLayout* histogram_buttons_layout = new QVBoxLayout();
     QGridLayout* histogram_action_buttons_layout = new QGridLayout();
     QGridLayout* histogram_special_buttons_layout = new QGridLayout();
-
+    HistogramWidget* original_hist_widget;
+    HistogramWidget* new_hist_widget;
 
     /*-------------------------------------
             CONV WINDOW LAYOUTS
@@ -117,6 +119,9 @@ int main(int argc, char* argv[])
     
     QPushButton* histogram_equalize_button = new QPushButton("Equalize");
     QPushButton* histogram_match_button = new QPushButton("Match");
+    QPushButton* histogram_load_reference_button = new QPushButton("Load Reference");
+    QPushButton* histogram_apply_button = new QPushButton("Apply");
+    QPushButton* histogram_clear_button = new QPushButton("Clear");
 
     /*-------------------------------------
            ZOOM WINDOW BUTTONS
@@ -233,10 +238,57 @@ int main(int argc, char* argv[])
     -------------------------------------*/
 
     QObject::connect(histogram_equalize_button, &QPushButton::clicked, [&](){
+        std::vector<double> old_histogram = Histogram(editor.getNewImage()).getLuminanceChannel();        
         editor.setHistogramEqualized();
         editor.applyChanges();
-
         editable_histogram_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+        std::vector<double> new_histogram = Histogram(editor.getNewImage()).getLuminanceChannel();
+
+
+        original_hist_widget = new HistogramWidget(old_histogram, nullptr, "Original Histogram");
+        original_hist_widget->setMinimumSize(800, 400);
+        
+        new_hist_widget = new HistogramWidget(new_histogram, nullptr, "Equalized Histogram");
+        new_hist_widget->setMinimumSize(800, 400);
+        new_hist_widget->setWindowTitle("Equalized Histogram");
+
+        histogram_exhibit_window.setWindowTitle("Histograms");
+
+        histogram_exhibit_window.layout()->addWidget(original_hist_widget);
+        histogram_exhibit_window.layout()->addWidget(new_hist_widget);  
+        
+        histogram_exhibit_window.adjustSize();
+        histogram_exhibit_window.show();
+    });
+
+    QObject::connect(histogram_match_button, &QPushButton::clicked, [&](){
+        cv::Mat reference_image;
+
+        if(reference_image.empty()){
+            reference_image = cv::imread(QFileDialog::getOpenFileName(&histogram_window, "Open Reference Image", "", "Images (*.png *.jpg *.jpeg)").toStdString());
+        }
+
+        reference_histogram_image_label->setPixmap(QPixmap::fromImage(ImageEditing::convertMatToQImage(&reference_image)));
+        editor.setHistogramMatched(true, reference_image);
+        editor.applyChanges();
+        editable_histogram_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+
+        editable_histogram_image_label->adjustSize();
+        reference_histogram_image_label->adjustSize();
+        histogram_window.adjustSize();
+    });
+
+    QObject::connect(histogram_apply_button, &QPushButton::clicked, [&](){
+        histogram_window.close();
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
+    });
+
+    QObject::connect(histogram_clear_button, &QPushButton::clicked, [&](){
+        histogram_window.close();
+        editor.setHistogramEqualized(false);
+        editor.applyChanges();
+        new_image_label->setPixmap(QPixmap::fromImage(editor.convertNewImageToQImage()));
     });
 
 
@@ -531,6 +583,11 @@ int main(int argc, char* argv[])
     histogram_action_buttons_layout->addWidget(histogram_equalize_button, 0, 0);
     histogram_action_buttons_layout->addWidget(histogram_match_button, 0, 1);
 
+    histogram_special_buttons_layout->addWidget(histogram_load_reference_button, 1, 0);
+    histogram_special_buttons_layout->addWidget(histogram_apply_button, 2, 0);
+    histogram_special_buttons_layout->addWidget(histogram_clear_button, 3, 0);
+
+
     /*-------------------------------------
         ZOOM ADD WIDGETS TO LAYOUTS
     -------------------------------------*/
@@ -575,13 +632,15 @@ int main(int argc, char* argv[])
                 HIST ADD LAYOUTS 
     -------------------------------------*/
 
+    histogram_buttons_layout->setAlignment(Qt::AlignVCenter);
+
     histogram_buttons_layout->addLayout(histogram_action_buttons_layout);
     histogram_buttons_layout->addLayout(histogram_special_buttons_layout);
     histogram_editor_layout->addLayout(histogram_buttons_layout);
 
     main_histogram_layout->addLayout(image_histogram_layout);    
     histogram_editor_layout->addLayout(histogram_buttons_layout);
-    main_histogram_layout->addLayout(histogram_editor_layout);
+    main_histogram_layout->addLayout(histogram_editor_layout);    
 
     /*-------------------------------------
                 CONV ADD LAYOUTS 
@@ -698,6 +757,9 @@ int main(int argc, char* argv[])
     reference_histogram_image_label->setStyleSheet(IMAGE_LABEL_CSS_SYLE);
     histogram_equalize_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
     histogram_match_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    histogram_load_reference_button->setStyleSheet(ACTION_BUTTON_CSS_STYLE);
+    histogram_apply_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
+    histogram_clear_button->setStyleSheet(SPECIAL_ACTION_BUTTON_CSS_STYLE);
 
     /*-------------------------------------
             INITIALIZE HIST WINDOW   
@@ -705,6 +767,8 @@ int main(int argc, char* argv[])
 
     histogram_window.setLayout(main_histogram_layout);
     histogram_window.setWindowTitle("Histogram");
+
+    histogram_exhibit_window.setLayout(main_histogram_exhibit_layout);
 
     /*-------------------------------------
            INITIALIZE ZOOM WINDOW
