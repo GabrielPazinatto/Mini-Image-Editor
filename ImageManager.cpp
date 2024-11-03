@@ -138,6 +138,15 @@ void ImageManager::setHistogramEqualized(){
     this->current_modifiers.has_histogram_equalized = !this->current_modifiers.has_histogram_equalized;
 }
 
+void ImageManager::setHistogramEqualized(bool equalized){
+    this->current_modifiers.has_histogram_equalized = equalized;
+}
+
+void ImageManager::setHistogramMatched(bool matched, cv::Mat reference_image){
+    this->current_modifiers.has_histogram_matched = matched;
+    this->current_modifiers.histogram_reference_image = reference_image;
+}
+
 // returns a QImage copy of the source image
 QImage ImageManager::convertSourceToQImage(){
     return ImageEditing::convertMatToQImage(&(this->source_image));
@@ -163,7 +172,14 @@ bool ImageManager::sourceImageIsGrayScale(){
     return this->previous_modifiers.is_gray_scale;
 }
 
+cv::Mat* ImageManager::getNewImage(){
+    return &(this->new_image);
+}
 
+
+cv::Mat ImageManager::getHistogramEqReferenceImage(){
+    return this->current_modifiers.histogram_reference_image;
+}
 
 // EFFECTIVELY applies the changes to the new image
 void ImageManager::applyChanges(){
@@ -175,6 +191,10 @@ void ImageManager::applyChanges(){
 
     if(current_modifiers.has_histogram_equalized){
         ImageEditing::equalizeHistogram(&(this->new_image), this->current_modifiers.is_gray_scale);
+    }
+
+    if(current_modifiers.has_histogram_matched){
+        ImageEditing::matchHistogram(&(this->new_image), &(this->current_modifiers.histogram_reference_image));
     }
 
     if(current_modifiers.quantization_was_modified){

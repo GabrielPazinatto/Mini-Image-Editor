@@ -71,7 +71,9 @@ public:
     void setTimesZoomedIn(int times);
     void increaseTimesZoomedIn();
     void decreaseTimesZoomedIn();
+    void setHistogramEqualized(bool equalized);
     void setHistogramEqualized();
+    void setHistogramMatched(bool matched, cv::Mat reference_image);
 
     void generateNewImageHistogram();
 
@@ -90,5 +92,8 @@ public:
 
     QImage convertSourceToQImage();
     QImage convertNewImageToQImage();
+
+    cv::Mat getHistogramEqReferenceImage();
+    cv::Mat* getNewImage();
 
 };

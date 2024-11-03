@@ -454,6 +454,32 @@ int ImageEditing::getQuantization(cv::Mat image){
              HISTOGRAM
 -------------------------------------*/
 
+uchar findValueClosestTo(int shade, std::vector<double> target){
+    int l = 0;
+    int r = TONE_RANGE -1;
+    int m;
+
+    while(l <= r){
+        m = (l + r) / 2;
+
+        if(target[m] == shade){
+            return target[m];
+        }
+        else if(shade < target[m]){
+            r = m - 1;
+        }
+        else{
+            l = m + 1;
+        }
+    }
+
+    if(l == 0) return target[l];
+    if(r == TONE_RANGE - 1) return target[r];
+
+    return fabs(target[m] - shade) < fabs(target[m + 1] - shade) ? 
+        target[m] : target[m + 1];
+}
+
 Histogram ImageEditing::generateHistogram(const cv::Mat* image){
     Histogram hist = Histogram(image);
     return hist;
@@ -476,7 +502,6 @@ void ImageEditing::equalizeHistogram(cv::Mat* image, bool image_is_grayscale){
 
 
     if(image_is_grayscale || image->channels() == 1){
-        std::cout << "Gray image" << std::endl;
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
                 image->at<cv::Vec3b>(i, j)[RED_CHANNEL] = R[image->at<cv::Vec3b>(i, j)[RED_CHANNEL]];
@@ -486,7 +511,6 @@ void ImageEditing::equalizeHistogram(cv::Mat* image, bool image_is_grayscale){
         }
     }
     else{
-        std::cout << "Color image" << std::endl;
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
                 
@@ -495,13 +519,35 @@ void ImageEditing::equalizeHistogram(cv::Mat* image, bool image_is_grayscale){
                 image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL] = B[image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL]];
             }
         }
-
-
-
-
     }
 }
 
 void ImageEditing::matchHistogram(cv::Mat* image, const cv::Mat* reference){
 
+    std::vector<uchar> mapping(256, 0);
+    Histogram hist_ref = Histogram(reference, true);
+    Histogram hist_dest = Histogram(image, true);
+    uchar closest;
+
+    for(int i = 0; i < TONE_RANGE; i++){
+        closest = cv::saturate_cast<uchar>(findValueClosestTo(i, hist_ref.getLuminanceChannel()));
+        mapping[i] = closest;
+    }
+
+    int cols = image->cols;
+    int rows = image->rows;
+
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+
+            if(image->channels() == 3){
+                image->at<cv::Vec3b>(i, j)[RED_CHANNEL] = mapping[image->at<cv::Vec3b>(i, j)[RED_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL] = mapping[image->at<cv::Vec3b>(i, j)[GREEN_CHANNEL]];
+                image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL] = mapping[image->at<cv::Vec3b>(i, j)[BLUE_CHANNEL]];
+            }
+            else{
+                image->at<uchar>(i, j) = mapping[image->at<uchar>(i, j)];
+            }
+        }
+    }
 }
